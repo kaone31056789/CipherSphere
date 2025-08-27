@@ -1,0 +1,1688 @@
+/* CipherSphere - Tesla-Inspired Futuristic Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* Advanced CSS Variables - Tesla-Inspired Color System */
+:root {
+    /* Tesla-Inspired Dark Theme */
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --bg-tertiary: #151515;
+    --bg-card: rgba(15, 15, 15, 0.95);
+    --bg-glass: rgba(255, 255, 255, 0.03);
+    --bg-glass-hover: rgba(255, 255, 255, 0.08);
+    
+    /* Tesla Red Accent */
+    --tesla-red: #e31837;
+    --tesla-red-light: #ff4d6b;
+    --tesla-red-dark: #c4152e;
+    
+    /* Futuristic Blue System */
+    --cyber-blue: #00d4ff;
+    --cyber-blue-light: #33ddff;
+    --cyber-blue-dark: #0088cc;
+    --cyber-blue-glow: rgba(0, 212, 255, 0.4);
+    
+    /* Advanced Grays */
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-tertiary: rgba(255, 255, 255, 0.6);
+    --text-muted: rgba(255, 255, 255, 0.4);
+    
+    /* Status Colors */
+    --success: #00ff88;
+    --warning: #ffaa00;
+    --error: #ff3366;
+    --info: var(--cyber-blue);
+    
+    /* Borders & Lines */
+    --border-subtle: rgba(255, 255, 255, 0.1);
+    --border-medium: rgba(255, 255, 255, 0.2);
+    --border-strong: rgba(255, 255, 255, 0.3);
+    
+    /* Shadows & Glows */
+    --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-strong: 0 10px 40px rgba(0, 0, 0, 0.6);
+    --shadow-glow: 0 0 20px var(--cyber-blue-glow);
+    --shadow-glow-red: 0 0 20px rgba(227, 24, 55, 0.4);
+    
+    /* Spacing System */
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+    
+    /* Typography Scale */
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.25rem;
+    --text-5xl: 3rem;
+    --text-6xl: 3.75rem;
+    --text-7xl: 4.5rem;
+    
+    /* Animation Timing */
+    --duration-fast: 0.15s;
+    --duration-normal: 0.3s;
+    --duration-slow: 0.5s;
+    --duration-slower: 0.8s;
+    
+    /* Easing Functions */
+    --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-back: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Legacy Variables for Compatibility */
+    --primary-color: var(--cyber-blue);
+    --secondary-color: var(--tesla-red);
+    --accent-color: var(--success);
+    --dark-bg: var(--bg-primary);
+    --card-bg: var(--bg-card);
+    --border-glow: var(--border-medium);
+    --success-color: var(--success);
+    --error-color: var(--error);
+    --warning-color: var(--warning);
+}
+
+/* Tesla-Inspired Reset & Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+::selection {
+    background: var(--cyber-blue-glow);
+    color: var(--text-primary);
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-medium);
+    border-radius: var(--radius-full);
+    transition: background var(--duration-normal) var(--ease-out);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--cyber-blue);
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-weight: 400;
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+}
+
+body.cyber-body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Tesla-Inspired Animated Background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(227, 24, 55, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, rgba(0, 255, 136, 0.01) 0%, transparent 50%);
+    animation: backgroundFlow 20s ease-in-out infinite;
+    z-index: -2;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    animation: gridFloat 30s linear infinite;
+    z-index: -1;
+}
+
+@keyframes backgroundFlow {
+    0%, 100% { 
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.1) rotate(1deg);
+        opacity: 0.8;
+    }
+}
+
+@keyframes gridFloat {
+    0% { transform: translateY(0) translateX(0); }
+    100% { transform: translateY(-50px) translateX(-50px); }
+}
+
+/* Tesla-Style Navigation */
+.navbar, .cyber-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: var(--space-md) 0;
+    transition: all var(--duration-normal) var(--ease-out);
+}
+
+.navbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-brand, .cyber-brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    transition: all var(--duration-normal) var(--ease-out);
+}
+
+.navbar-brand::before, .cyber-brand::before {
+    content: '⚡';
+    font-size: var(--text-3xl);
+    background: linear-gradient(135deg, var(--cyber-blue), var(--tesla-red));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: logoGlow 3s ease-in-out infinite;
+}
+
+@keyframes logoGlow {
+    0%, 100% { filter: drop-shadow(0 0 5px var(--cyber-blue-glow)); }
+    50% { filter: drop-shadow(0 0 15px var(--cyber-blue-glow)); }
+}
+
+.navbar-nav {
+    display: flex;
+    list-style: none;
+    gap: var(--space-xl);
+    align-items: center;
+}
+
+.nav-link, .cyber-nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    position: relative;
+    transition: all var(--duration-normal) var(--ease-out);
+    overflow: hidden;
+}
+
+.nav-link::before, .cyber-nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--cyber-blue-glow), transparent);
+    transition: left var(--duration-slow) var(--ease-out);
+}
+
+.nav-link:hover, .cyber-nav-link:hover {
+    color: var(--text-primary);
+    background: var(--bg-glass);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+}
+
+.nav-link:hover::before, .cyber-nav-link:hover::before {
+    left: 100%;
+}
+
+.nav-link.active {
+    color: var(--cyber-blue);
+    background: var(--bg-glass-hover);
+    box-shadow: var(--shadow-glow);
+}
+
+.cyber-nav-link.admin-link {
+    color: var(--tesla-red);
+    border: 1px solid rgba(227, 24, 55, 0.3);
+}
+
+.cyber-nav-link.admin-link:hover {
+    background: var(--tesla-red);
+    color: white;
+    box-shadow: var(--shadow-glow-red);
+}
+
+/* Tesla-Style Main Container */
+.main-container {
+    margin-top: 80px;
+    min-height: calc(100vh - 80px);
+    padding: var(--space-2xl);
+}
+
+/* Tesla-Inspired Glass Cards */
+.glass-card,
+.cyber-auth-card,
+.cyber-dashboard-card,
+.cyber-modal .modal-content {
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--duration-normal) var(--ease-out);
+}
+
+.glass-card::before,
+.cyber-auth-card::before,
+.cyber-dashboard-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyber-blue), var(--tesla-red), var(--success));
+    animation: borderGlow 3s ease-in-out infinite;
+}
+
+@keyframes borderGlow {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.glass-card:hover,
+.cyber-auth-card:hover,
+.cyber-dashboard-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-strong), var(--shadow-glow);
+    border-color: var(--border-medium);
+}
+
+/* Tesla-Style Hero Section */
+.hero-section, .cyber-hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-3xl) 0;
+    position: relative;
+}
+
+.hero-title, .cyber-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(var(--text-4xl), 8vw, var(--text-7xl));
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--text-primary), var(--cyber-blue), var(--tesla-red));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--space-lg);
+    animation: titleReveal 1s var(--ease-out);
+}
+
+@keyframes titleReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.glitch-text {
+    position: relative;
+    display: inline-block;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+.glitch-text::before {
+    animation: glitch1 2s infinite;
+    color: var(--cyber-blue);
+    z-index: -1;
+}
+
+.glitch-text::after {
+    animation: glitch2 2s infinite;
+    color: var(--tesla-red);
+    z-index: -2;
+}
+
+@keyframes glitch1 {
+    0%, 90%, 100% { opacity: 0; }
+    5% { opacity: 1; transform: translate(2px, 0); }
+    10% { opacity: 1; transform: translate(-2px, 0); }
+}
+
+@keyframes glitch2 {
+    0%, 90%, 100% { opacity: 0; }
+    15% { opacity: 1; transform: translate(-2px, 0); }
+    20% { opacity: 1; transform: translate(2px, 0); }
+}
+
+.hero-subtitle, .cyber-subtitle {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2xl);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    animation: subtitleFade 1s var(--ease-out) 0.3s both;
+}
+
+@keyframes subtitleFade {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-description, .cyber-description {
+    font-size: var(--text-lg);
+    color: var(--text-tertiary);
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto var(--space-2xl);
+    animation: descriptionFade 1s var(--ease-out) 0.6s both;
+}
+
+@keyframes descriptionFade {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Tesla-Inspired Buttons */
+.btn,
+.cyber-btn-primary,
+.cyber-btn-secondary,
+.cyber-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--duration-normal) var(--ease-out);
+    min-width: 140px;
+}
+
+.btn-primary,
+.cyber-btn-primary {
+    background: linear-gradient(135deg, var(--cyber-blue), var(--cyber-blue-dark));
+    color: white;
+    box-shadow: var(--shadow-glow);
+}
+
+.btn-primary::before,
+.cyber-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left var(--duration-slow) var(--ease-out);
+}
+
+.btn-primary:hover,
+.cyber-btn-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 0 30px var(--cyber-blue-glow);
+}
+
+.btn-primary:hover::before,
+.cyber-btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-secondary,
+.cyber-btn-secondary {
+    background: transparent;
+    color: var(--cyber-blue);
+    border: 2px solid var(--cyber-blue);
+}
+
+.btn-secondary:hover,
+.cyber-btn-secondary:hover {
+    background: var(--cyber-blue);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success), #00cc66);
+    color: white;
+}
+
+.btn-success:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--tesla-red), var(--tesla-red-dark));
+    color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow-red);
+}
+
+.cyber-btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-medium);
+    color: var(--text-secondary);
+}
+
+.cyber-btn-outline:hover {
+    background: var(--bg-glass-hover);
+    color: var(--text-primary);
+    border-color: var(--cyber-blue);
+    box-shadow: var(--shadow-glow);
+}
+
+/* Tesla-Style Forms */
+.form-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.form-group,
+.cyber-input-group {
+    margin-bottom: var(--space-lg);
+    position: relative;
+}
+
+.form-label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-control,
+.cyber-input {
+    width: 100%;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--text-base);
+    font-family: inherit;
+    transition: all var(--duration-normal) var(--ease-out);
+    backdrop-filter: blur(10px);
+}
+
+.cyber-input {
+    padding-left: 50px;
+}
+
+.form-control:focus,
+.cyber-input:focus {
+    outline: none;
+    border-color: var(--cyber-blue);
+    box-shadow: 0 0 0 3px var(--cyber-blue-glow);
+    background: var(--bg-glass-hover);
+    transform: translateY(-2px);
+}
+
+.form-control::placeholder,
+.cyber-input::placeholder {
+    color: var(--text-muted);
+}
+
+.input-icon {
+    position: absolute;
+    left: var(--space-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    transition: all var(--duration-normal) var(--ease-out);
+}
+
+.cyber-input:focus + .input-icon {
+    color: var(--cyber-blue);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.form-select,
+.cyber-select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%2300d4ff" d="M2 0L0 2h4z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right var(--space-md) center;
+    background-size: 12px;
+    padding-right: 40px;
+}
+
+.cyber-select {
+    padding-left: 50px;
+}
+
+/* Tesla-Style File Upload */
+.file-upload {
+    position: relative;
+    width: 100%;
+}
+
+.file-upload input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.file-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-3xl);
+    background: var(--bg-glass);
+    border: 2px dashed var(--border-medium);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-out);
+}
+
+.file-upload-label::before {
+    content: '📁';
+    font-size: var(--text-5xl);
+    margin-bottom: var(--space-md);
+    animation: floatUpload 2s ease-in-out infinite;
+}
+
+@keyframes floatUpload {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.file-upload-label:hover {
+    border-color: var(--cyber-blue);
+    background: var(--bg-glass-hover);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-glow);
+}
+
+/* Tesla-Style Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-xl);
+    margin: var(--space-2xl) 0;
+}
+
+.dashboard-card,
+.cyber-stat-card,
+.cyber-feature-card {
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    transition: all var(--duration-normal) var(--ease-out);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-card::before,
+.cyber-stat-card::before,
+.cyber-feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cyber-blue), var(--tesla-red));
+    animation: cardGlow 4s ease-in-out infinite;
+}
+
+@keyframes cardGlow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.dashboard-card:hover,
+.cyber-stat-card:hover,
+.cyber-feature-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: var(--shadow-strong), var(--shadow-glow);
+    border-color: var(--border-medium);
+}
+
+.dashboard-card-title,
+.dashboard-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+}
+
+.dashboard-title {
+    font-size: clamp(var(--text-3xl), 5vw, var(--text-5xl));
+    background: linear-gradient(135deg, var(--text-primary), var(--cyber-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.username-highlight {
+    color: var(--success);
+    font-weight: 700;
+    animation: usernameGlow 2s ease-in-out infinite;
+}
+
+@keyframes usernameGlow {
+    0%, 100% { text-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
+    50% { text-shadow: 0 0 20px rgba(0, 255, 136, 0.6); }
+}
+
+.dashboard-subtitle {
+    color: var(--text-secondary);
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.stat-icon,
+.feature-icon {
+    font-size: var(--text-4xl);
+    color: var(--cyber-blue);
+    margin-bottom: var(--space-md);
+    display: block;
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(5deg); }
+}
+
+.stat-content h3 {
+    font-size: var(--text-3xl);
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.stat-content p,
+.cyber-feature-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.stat-trend {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    color: var(--success);
+    font-size: var(--text-lg);
+    animation: trendPulse 2s infinite;
+}
+
+@keyframes trendPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.cyber-feature-card h4 {
+    color: var(--text-primary);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+}
+
+/* Tesla-Style Algorithm Cards */
+.algorithm-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-xl);
+    margin: var(--space-2xl) 0;
+}
+
+.algorithm-card {
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-out);
+    position: relative;
+}
+
+.algorithm-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--cyber-blue-glow), var(--tesla-red));
+    opacity: 0;
+    transition: opacity var(--duration-normal) var(--ease-out);
+    z-index: -1;
+}
+
+.algorithm-card:hover::before {
+    opacity: 0.1;
+}
+
+.algorithm-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    border-color: var(--cyber-blue);
+    box-shadow: var(--shadow-glow);
+}
+
+.algorithm-card.selected {
+    border-color: var(--cyber-blue);
+    background: var(--bg-glass-hover);
+    box-shadow: var(--shadow-glow);
+    transform: scale(1.02);
+}
+
+.algorithm-header {
+    background: linear-gradient(135deg, var(--cyber-blue), var(--cyber-blue-dark));
+    padding: var(--space-xl);
+    text-align: center;
+    color: white;
+    position: relative;
+}
+
+.algorithm-header i {
+    font-size: var(--text-4xl);
+    margin-bottom: var(--space-md);
+    display: block;
+}
+
+.algorithm-header h3 {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.algorithm-body {
+    padding: var(--space-xl);
+}
+
+.algorithm-body p {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+    font-size: var(--text-lg);
+}
+
+.algorithm-body ul {
+    list-style: none;
+    padding: 0;
+}
+
+.algorithm-body li {
+    color: var(--text-secondary);
+    padding: var(--space-sm) 0;
+    position: relative;
+    padding-left: var(--space-xl);
+    line-height: 1.5;
+}
+
+.algorithm-body li::before {
+    content: '▶';
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-size: var(--text-sm);
+}
+
+/* Tesla-Style Authentication */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.auth-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--cyber-blue), var(--tesla-red));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-lg);
+    font-size: var(--text-3xl);
+    color: white;
+    animation: authIconPulse 2s ease-in-out infinite;
+    box-shadow: var(--shadow-glow);
+}
+
+@keyframes authIconPulse {
+    0%, 100% { 
+        transform: scale(1);
+        box-shadow: var(--shadow-glow);
+    }
+    50% { 
+        transform: scale(1.05);
+        box-shadow: 0 0 30px var(--cyber-blue-glow);
+    }
+}
+
+.auth-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+}
+
+.auth-subtitle {
+    color: var(--text-secondary);
+    font-size: var(--text-lg);
+}
+
+.auth-divider {
+    text-align: center;
+    margin: var(--space-xl) 0;
+    position: relative;
+}
+
+.auth-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-medium), transparent);
+}
+
+.auth-divider span {
+    background: var(--bg-card);
+    padding: 0 var(--space-md);
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+/* Tesla-Style Progress & Loading */
+.progress-container {
+    background: var(--bg-glass);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    margin: var(--space-md) 0;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 20px;
+    background: linear-gradient(90deg, var(--cyber-blue), var(--success));
+    border-radius: var(--radius-sm);
+    transition: width var(--duration-slow) var(--ease-out);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: progressShimmer 2s infinite;
+}
+
+@keyframes progressShimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--border-subtle);
+    border-top: 3px solid var(--cyber-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.cyber-loader {
+    text-align: center;
+}
+
+.loader-text {
+    color: var(--cyber-blue);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    margin-top: var(--space-md);
+    animation: loaderPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loaderPulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+/* Tesla-Style Notifications */
+.notification {
+    position: fixed;
+    top: 100px;
+    right: var(--space-xl);
+    background: var(--bg-glass);
+    backdrop-filter: blur(25px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg) var(--space-xl);
+    min-width: 300px;
+    z-index: 1001;
+    transform: translateX(400px);
+    transition: all var(--duration-slow) var(--ease-back);
+    box-shadow: var(--shadow-strong);
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    border-left: 4px solid var(--success);
+    box-shadow: var(--shadow-strong), 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.notification.error {
+    border-left: 4px solid var(--error);
+    box-shadow: var(--shadow-strong), 0 0 20px rgba(255, 51, 102, 0.3);
+}
+
+.notification.warning {
+    border-left: 4px solid var(--warning);
+    box-shadow: var(--shadow-strong), 0 0 20px rgba(255, 170, 0, 0.3);
+}
+
+/* Tesla-Style Activity Feed */
+.activity-log,
+.activity-timeline {
+    background: var(--bg-glass);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin: var(--space-md) 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: all var(--duration-normal) var(--ease-out);
+}
+
+.activity-item:hover {
+    background: var(--bg-glass-hover);
+    transform: translateX(5px);
+    border-radius: var(--radius-sm);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyber-blue), var(--tesla-red));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--space-md);
+    font-size: var(--text-lg);
+    color: white;
+    box-shadow: var(--shadow-glow);
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title,
+.activity-text {
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+    color: var(--text-primary);
+}
+
+.activity-time {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Tesla-Style Data Tables */
+.data-table {
+    width: 100%;
+    background: var(--bg-glass);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border-collapse: collapse;
+    backdrop-filter: blur(20px);
+}
+
+.data-table th,
+.data-table td {
+    padding: var(--space-md) var(--space-lg);
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.data-table th {
+    background: var(--bg-glass-hover);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: var(--text-sm);
+    color: var(--cyber-blue);
+}
+
+.data-table tr:hover {
+    background: var(--bg-glass-hover);
+    transform: scale(1.01);
+}
+
+/* Tesla-Style Alerts */
+.cyber-alert {
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border: 2px solid;
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    padding: var(--space-lg) var(--space-xl);
+    position: relative;
+    overflow: hidden;
+}
+
+.cyber-alert::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: alertShimmer 3s infinite;
+}
+
+@keyframes alertShimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.alert-success.cyber-alert {
+    border-color: var(--success);
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.alert-danger.cyber-alert {
+    border-color: var(--error);
+    box-shadow: 0 0 20px rgba(255, 51, 102, 0.3);
+}
+
+.alert-warning.cyber-alert {
+    border-color: var(--warning);
+    box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
+}
+
+/* Tesla-Style Status Indicators */
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: var(--space-sm);
+    position: relative;
+}
+
+.status-indicator::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+.status-online {
+    background: var(--success);
+}
+
+.status-online::before {
+    background: var(--success);
+    opacity: 0.3;
+}
+
+.status-offline {
+    background: var(--error);
+}
+
+.status-offline::before {
+    background: var(--error);
+    opacity: 0.3;
+}
+
+.status-warning {
+    background: var(--warning);
+}
+
+.status-warning::before {
+    background: var(--warning);
+    opacity: 0.3;
+}
+
+@keyframes statusPulse {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.5); opacity: 0.1; }
+}
+
+/* Tesla-Style Floating Action Button */
+.fab {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyber-blue), var(--cyber-blue-dark));
+    border: none;
+    color: white;
+    font-size: var(--text-xl);
+    cursor: pointer;
+    box-shadow: var(--shadow-glow);
+    transition: all var(--duration-normal) var(--ease-out);
+    z-index: 1000;
+}
+
+.fab:hover {
+    transform: scale(1.1) rotate(10deg);
+    box-shadow: 0 0 30px var(--cyber-blue-glow);
+}
+
+/* Tesla-Style User Features */
+.username-suggestions {
+    margin-top: var(--space-md);
+}
+
+.suggestion-badge {
+    display: inline-block;
+    background: var(--bg-glass);
+    border: 1px solid var(--cyber-blue);
+    border-radius: var(--radius-full);
+    padding: var(--space-xs) var(--space-md);
+    margin: var(--space-xs);
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-out);
+    font-size: var(--text-sm);
+    font-weight: 500;
+}
+
+.suggestion-badge:hover {
+    background: var(--cyber-blue);
+    color: white;
+    transform: scale(1.05);
+}
+
+.password-strength {
+    margin-top: var(--space-md);
+}
+
+.strength-bar {
+    height: 6px;
+    background: var(--bg-glass);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: var(--space-sm);
+}
+
+.strength-fill {
+    height: 100%;
+    transition: all var(--duration-slow) var(--ease-out);
+    border-radius: var(--radius-sm);
+}
+
+.strength-text {
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+
+.strength-feedback {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    margin-top: var(--space-xs);
+    line-height: 1.4;
+}
+
+.username-status {
+    margin-top: var(--space-md);
+    font-size: var(--text-sm);
+    font-weight: 500;
+}
+
+.username-status.available {
+    color: var(--success);
+}
+
+.username-status.taken {
+    color: var(--error);
+}
+
+/* Tesla-Style File Management */
+.files-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: all var(--duration-normal) var(--ease-out);
+}
+
+.file-item:hover {
+    background: var(--bg-glass-hover);
+    transform: translateX(5px);
+    border-radius: var(--radius-sm);
+}
+
+.file-item:last-child {
+    border-bottom: none;
+}
+
+.file-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-glass-hover);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--space-md);
+    color: var(--success);
+    font-size: var(--text-lg);
+}
+
+.file-info {
+    flex: 1;
+}
+
+.file-name {
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+    font-weight: 600;
+    font-size: var(--text-base);
+}
+
+.file-meta {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.file-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+/* Tesla-Style Empty States */
+.empty-state {
+    text-align: center;
+    padding: var(--space-3xl) var(--space-xl);
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: var(--text-6xl);
+    margin-bottom: var(--space-lg);
+    opacity: 0.4;
+    animation: emptyFloat 3s ease-in-out infinite;
+}
+
+@keyframes emptyFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+/* Tesla-Style Card Headers */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.card-header h4 {
+    color: var(--text-primary);
+    margin: 0;
+    font-size: var(--text-xl);
+    font-weight: 600;
+}
+
+.cyber-link {
+    color: var(--cyber-blue);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    transition: all var(--duration-normal) var(--ease-out);
+    font-weight: 500;
+}
+
+.cyber-link:hover {
+    color: var(--success);
+    text-decoration: underline;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+/* Tesla-Style Tooltips */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    color: var(--text-primary);
+    text-align: center;
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity var(--duration-normal) var(--ease-out);
+    border: 1px solid var(--border-subtle);
+    font-size: var(--text-sm);
+    box-shadow: var(--shadow-medium);
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Tesla-Style Dropdown */
+.cyber-dropdown {
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-strong);
+}
+
+.cyber-dropdown .dropdown-item {
+    color: var(--text-secondary);
+    transition: all var(--duration-normal) var(--ease-out);
+    padding: var(--space-md) var(--space-lg);
+}
+
+.cyber-dropdown .dropdown-item:hover {
+    background: var(--bg-glass-hover);
+    color: var(--cyber-blue);
+}
+
+/* Tesla-Style Footer */
+.cyber-footer {
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-subtle);
+    padding: var(--space-2xl) 0;
+    color: var(--text-secondary);
+    margin-top: var(--space-3xl);
+}
+
+/* Responsive Design - Tesla Mobile First */
+@media (max-width: 768px) {
+    .hero-title, .cyber-title {
+        font-size: clamp(var(--text-3xl), 10vw, var(--text-5xl));
+    }
+    
+    .hero-subtitle, .cyber-subtitle {
+        font-size: var(--text-lg);
+    }
+    
+    .navbar-container {
+        padding: 0 var(--space-md);
+    }
+    
+    .navbar-nav {
+        gap: var(--space-md);
+    }
+    
+    .main-container {
+        padding: var(--space-md);
+    }
+    
+    .glass-card, .cyber-auth-card, .cyber-dashboard-card {
+        padding: var(--space-lg);
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .algorithm-selector {
+        grid-template-columns: 1fr;
+    }
+    
+    .notification {
+        right: var(--space-md);
+        left: var(--space-md);
+        width: auto;
+        min-width: auto;
+    }
+}
+
+/* Print Styles */
+@media print {
+    body::before,
+    body::after,
+    .navbar,
+    .cyber-navbar,
+    .fab {
+        display: none !important;
+    }
+    
+    .main-container {
+        margin-top: 0;
+    }
+}
+
+/* Advanced Hover Effects */
+.hover-glow:hover {
+    filter: drop-shadow(0 0 20px var(--cyber-blue-glow));
+}
+
+.hover-lift:hover {
+    transform: translateY(-8px);
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+/* Utility Classes */
+.animate-fade-in {
+    animation: fadeInUp 0.8s var(--ease-out);
+}
+
+.animate-slide-in {
+    animation: slideInFromRight 0.8s var(--ease-out);
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}

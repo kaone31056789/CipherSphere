@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}Encryption Result - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="cyber-container">
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <h2 class="cyber-title">
+                <i class="fas fa-shield-alt"></i>
+                Encryption Complete
+            </h2>
+            <p class="cyber-subtitle">Your data has been successfully encrypted</p>
+        </div>
+
+        <div class="result-container">
+            <!-- Encryption Details -->
+            <div class="encryption-details">
+                <div class="detail-item">
+                    <i class="fas fa-lock"></i>
+                    <span class="detail-label">Algorithm:</span>
+                    <span class="detail-value">{{ algorithm }}</span>
+                </div>
+                {% if is_text %}
+                <div class="detail-item">
+                    <i class="fas fa-file-text"></i>
+                    <span class="detail-label">Type:</span>
+                    <span class="detail-value">Text Content</span>
+                </div>
+                {% else %}
+                <div class="detail-item">
+                    <i class="fas fa-file"></i>
+                    <span class="detail-label">File:</span>
+                    <span class="detail-value">{{ filename }}</span>
+                </div>
+                {% endif %}
+                <div class="detail-item">
+                    <i class="fas fa-key"></i>
+                    <span class="detail-label">Encryption Key:</span>
+                    <div class="key-container">
+                        <input type="text" class="key-display" value="{{ key }}" readonly id="encryptionKey">
+                        <button class="btn btn-sm btn-secondary" onclick="copyKey()">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Output -->
+            {% if is_text %}
+            <div class="encrypted-content">
+                <label class="cyber-label">
+                    <i class="fas fa-shield-alt"></i>
+                    Encrypted Content:
+                </label>
+                <div class="content-display">
+                    <textarea class="cyber-textarea" readonly rows="10">{{ result.data.decode('utf-8', errors='ignore') if result.data else '' }}</textarea>
+                    <div class="content-actions">
+                        <button class="btn btn-primary" onclick="copyContent()">
+                            <i class="fas fa-copy"></i>
+                            Copy Content
+                        </button>
+                        <button class="btn btn-success" onclick="downloadContent()">
+                            <i class="fas fa-download"></i>
+                            Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="file-result">
+                <div class="file-info">
+                    <i class="fas fa-file-archive"></i>
+                    <div class="file-details">
+                        <h4>Encrypted File Ready</h4>
+                        <p>Your file has been encrypted and is ready for download.</p>
+                    </div>
+                </div>
+                <div class="file-actions">
+                    <a href="{{ url_for('download_encrypted_file', file_id=result.file_id) if result.file_id else '#' }}" 
+                       class="btn btn-primary">
+                        <i class="fas fa-download"></i>
+                        Download Encrypted File
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Share Options -->
+            <div class="share-section">
+                <h3 class="section-title">
+                    <i class="fas fa-share-alt"></i>
+                    Share Encrypted Data
+                </h3>
+                <div class="share-options">
+                    <button class="btn btn-outline-primary" onclick="shareViaEmail()">
+                        <i class="fas fa-envelope"></i>
+                        Share via Email
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="generateShareLink()">
+                        <i class="fas fa-link"></i>
+                        Generate Share Link
+                    </button>
+                    <button class="btn btn-outline-success" onclick="shareWithUser()">
+                        <i class="fas fa-user-plus"></i>
+                        Share with User
+                    </button>
+                </div>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="security-notice">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="notice-content">
+                    <h4>Important Security Notice</h4>
+                    <ul>
+                        <li>Keep your encryption key safe - you'll need it to decrypt the data</li>
+                        <li>If you lose the key, your data cannot be recovered</li>
+                        <li>Share the key securely, separate from the encrypted content</li>
+                        <li>Consider using a secure password manager to store the key</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{{ url_for('encrypt') }}" class="btn btn-secondary">
+                    <i class="fas fa-plus"></i>
+                    Encrypt More Data
+                </a>
+                <a href="{{ url_for('vault') }}" class="btn btn-primary">
+                    <i class="fas fa-vault"></i>
+                    View Vault
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal" id="shareModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Share Encrypted Data</h3>
+            <button class="modal-close" onclick="closeShareModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="share-form">
+                <div class="form-group">
+                    <label>Share with User:</label>
+                    <input type="email" class="form-control" placeholder="Enter email address" id="shareEmail">
+                </div>
+                <div class="form-group">
+                    <label>Access Level:</label>
+                    <select class="form-control" id="accessLevel">
+                        <option value="view">View Only</option>
+                        <option value="download">Download</option>
+                        <option value="decrypt">Decrypt (includes key)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Expiry:</label>
+                    <select class="form-control" id="shareExpiry">
+                        <option value="1">1 Day</option>
+                        <option value="7">1 Week</option>
+                        <option value="30">1 Month</option>
+                        <option value="0">No Expiry</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeShareModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="sendShare()">Share</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyKey() {
+    const keyField = document.getElementById('encryptionKey');
+    keyField.select();
+    document.execCommand('copy');
+    showNotification('Encryption key copied to clipboard!', 'success');
+}
+
+function copyContent() {
+    const content = document.querySelector('.cyber-textarea');
+    content.select();
+    document.execCommand('copy');
+    showNotification('Encrypted content copied to clipboard!', 'success');
+}
+
+function downloadContent() {
+    const content = document.querySelector('.cyber-textarea').value;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'encrypted_content.txt';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+function shareViaEmail() {
+    const key = document.getElementById('encryptionKey').value;
+    const subject = 'Encrypted Data from CipherSphere';
+    const body = `I've shared encrypted data with you from CipherSphere.%0A%0AEncryption Key: ${key}%0A%0APlease keep this key secure!`;
+    window.open(`mailto:?subject=${subject}&body=${body}`);
+}
+
+function generateShareLink() {
+    // Generate a shareable link (would need backend implementation)
+    const shareUrl = `${window.location.origin}/shared/{{ result.share_id if result.share_id else 'temp' }}`;
+    navigator.clipboard.writeText(shareUrl);
+    showNotification('Share link copied to clipboard!', 'success');
+}
+
+function shareWithUser() {
+    document.getElementById('shareModal').style.display = 'flex';
+}
+
+function closeShareModal() {
+    document.getElementById('shareModal').style.display = 'none';
+}
+
+function sendShare() {
+    const email = document.getElementById('shareEmail').value;
+    const accessLevel = document.getElementById('accessLevel').value;
+    const expiry = document.getElementById('shareExpiry').value;
+    
+    if (!email) {
+        showNotification('Please enter an email address', 'error');
+        return;
+    }
+    
+    // Send share request to backend
+    fetch('/share_encrypted_data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email,
+            access_level: accessLevel,
+            expiry_days: expiry,
+            {% if is_text %}
+            content_type: 'text',
+            content: '{{ result.data.decode("utf-8", errors="ignore") if result.data else "" }}',
+            {% else %}
+            content_type: 'file',
+            file_id: '{{ result.file_id if result.file_id else "" }}',
+            {% endif %}
+            encryption_key: '{{ key }}',
+            algorithm: '{{ algorithm }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Data shared successfully!', 'success');
+            closeShareModal();
+        } else {
+            showNotification('Failed to share data: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Error sharing data', 'error');
+    });
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
+
+<style>
+.result-container {
+    space-y: 2rem;
+}
+
+.encryption-details {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.detail-item i {
+    color: var(--cyber-blue);
+    width: 20px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 120px;
+}
+
+.detail-value {
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.key-container {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.key-display {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 0.5rem;
+    color: var(--text-primary);
+}
+
+.encrypted-content, .file-result {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.content-display {
+    position: relative;
+}
+
+.content-actions, .file-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.share-section {
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.share-options {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.security-notice {
+    background: rgba(255, 170, 0, 0.1);
+    border: 1px solid rgba(255, 170, 0, 0.3);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.security-notice i {
+    color: var(--warning);
+    font-size: 1.5rem;
+    margin-top: 0.25rem;
+}
+
+.notice-content h4 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.notice-content ul {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.file-info i {
+    color: var(--cyber-blue);
+    font-size: 2rem;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 10000;
+    animation: slideIn 0.3s ease;
+}
+
+.notification.success {
+    background: var(--success);
+}
+
+.notification.error {
+    background: var(--error);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+</style>
+{% endblock %}

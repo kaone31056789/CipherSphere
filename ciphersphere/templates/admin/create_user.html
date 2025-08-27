@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}Create User - Admin - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <!-- Admin Sidebar -->
+    <nav class="admin-sidebar">
+        <div class="admin-brand">
+            <i class="fas fa-shield-alt"></i>
+            <span>Admin Panel</span>
+        </div>
+        
+        <ul class="admin-nav">
+            <li class="nav-item">
+                <a href="{{ url_for('admin_dashboard') }}" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('admin_users') }}" class="nav-link active">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('admin_files') }}" class="nav-link">
+                    <i class="fas fa-file-shield"></i>
+                    <span>Files</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('admin_activity') }}" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Activity</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('admin_settings') }}" class="nav-link">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+        <div class="admin-header">
+            <div class="admin-header-content">
+                <div class="admin-header-left">
+                    <h1 class="admin-title">
+                        <i class="fas fa-user-plus"></i>
+                        Create New User
+                    </h1>
+                    <nav class="admin-breadcrumb">
+                        <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                        <i class="fas fa-chevron-right"></i>
+                        <a href="{{ url_for('admin_users') }}">Users</a>
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Create User</span>
+                    </nav>
+                </div>
+                <div class="admin-header-actions">
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Users
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-body">
+            <!-- Create User Form -->
+            <div class="glass-container">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user-plus"></i>
+                        User Information
+                    </h3>
+                    <p class="card-description">Fill in the details below to create a new user account.</p>
+                </div>
+
+                <form method="POST" class="user-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user"></i>
+                                Username
+                            </label>
+                            <input type="text" id="username" name="username" class="form-control" required>
+                            <div class="form-help">Username must be unique and contain only letters, numbers, and underscores.</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="full_name" class="form-label">
+                                <i class="fas fa-id-card"></i>
+                                Full Name
+                            </label>
+                            <input type="text" id="full_name" name="full_name" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope"></i>
+                                Email Address
+                            </label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                Password
+                            </label>
+                            <input type="password" id="password" name="password" class="form-control" required minlength="8">
+                            <div class="form-help">Password must be at least 8 characters long.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-shield-alt"></i>
+                            Security Settings
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label for="security_question" class="form-label">
+                                <i class="fas fa-question-circle"></i>
+                                Security Question
+                            </label>
+                            <select id="security_question" name="security_question" class="form-control" required>
+                                <option value="">Select a security question</option>
+                                <option value="What was the name of your first pet?">What was the name of your first pet?</option>
+                                <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                                <option value="What city were you born in?">What city were you born in?</option>
+                                <option value="What was the name of your elementary school?">What was the name of your elementary school?</option>
+                                <option value="What is your favorite food?">What is your favorite food?</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="security_answer" class="form-label">
+                                <i class="fas fa-key"></i>
+                                Security Answer
+                            </label>
+                            <input type="text" id="security_answer" name="security_answer" class="form-control" required>
+                            <div class="form-help">This answer will be used for account recovery.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-user-cog"></i>
+                            Account Permissions
+                        </h4>
+                        
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="is_admin" name="is_admin" class="checkbox-input">
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-text">
+                                        <strong>Administrator Access</strong>
+                                        <small>Grant full admin privileges to this user</small>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" onclick="window.history.back()" class="btn btn-secondary">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i>
+                            Create User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.user-form {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.form-section {
+    margin-bottom: var(--space-xl);
+    padding: var(--space-lg);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.form-help {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin-top: var(--space-xs);
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    cursor: pointer;
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.checkbox-label:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-primary);
+}
+
+.checkbox-input {
+    display: none;
+}
+
+.checkbox-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-sm);
+    position: relative;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.checkbox-input:checked + .checkbox-custom {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.checkbox-input:checked + .checkbox-custom::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.checkbox-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.checkbox-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.checkbox-text small {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-md);
+    padding-top: var(--space-lg);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to CipherSphere{% endblock %}
+
+{% block content %}
+<div class="cyber-hero">
+    <div class="row align-items-center min-vh-100">
+        <div class="col-lg-6">
+            <div class="hero-content">
+                <h1 class="cyber-title mb-4">
+                    <span class="glitch-text" data-text="CipherSphere">CipherSphere</span>
+                </h1>
+                <p class="cyber-subtitle mb-4">
+                    Next-generation encryption platform with military-grade security
+                </p>
+                <p class="cyber-description mb-5">
+                    Experience the future of data protection with our advanced encryption algorithms,
+                    intuitive interface, and cutting-edge security features. Your data, our protection.
+                </p>
+                
+                <div class="hero-buttons">
+                    <a href="{{ url_for('register') }}" class="btn cyber-btn-primary me-3">
+                        <i class="fas fa-user-plus"></i> Get Started
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn cyber-btn-secondary">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="hero-visual">
+                <div class="cyber-orb">
+                    <div class="orb-core">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="orb-ring ring-1"></div>
+                    <div class="orb-ring ring-2"></div>
+                    <div class="orb-ring ring-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="features-section py-5">
+    <div class="container">
+        <h2 class="text-center cyber-section-title mb-5">Advanced Security Features</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="cyber-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h4>Multiple Algorithms</h4>
+                    <p>Choose from AES, RSA, and Fernet encryption algorithms for optimal security.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="cyber-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h4>File & Text Encryption</h4>
+                    <p>Encrypt both text content and files with seamless upload and download capabilities.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="cyber-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <h4>Secure Sharing</h4>
+                    <p>Share encrypted files securely with other users through our advanced sharing system.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="cyber-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h4>Personal Vault</h4>
+                    <p>Store your encrypted files safely in your personal digital vault with easy access.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="cyber-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Activity Tracking</h4>
+                    <p>Monitor all your encryption activities with detailed logs and analytics.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="cyber-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h4>Admin Control</h4>
+                    <p>Comprehensive admin dashboard for user management and system monitoring.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Algorithm Comparison -->
+<div class="algorithm-section py-5">
+    <div class="container">
+        <h2 class="text-center cyber-section-title mb-5">Encryption Algorithms</h2>
+        
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="algorithm-card">
+                    <div class="algorithm-header">
+                        <i class="fas fa-key"></i>
+                        <h3>AES</h3>
+                    </div>
+                    <div class="algorithm-body">
+                        <p><strong>Advanced Encryption Standard</strong></p>
+                        <ul>
+                            <li>256-bit encryption</li>
+                            <li>Industry standard</li>
+                            <li>Fast performance</li>
+                            <li>Symmetric encryption</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="algorithm-card">
+                    <div class="algorithm-header">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Fernet</h3>
+                    </div>
+                    <div class="algorithm-body">
+                        <p><strong>High-level Symmetric Encryption</strong></p>
+                        <ul>
+                            <li>Built-in authentication</li>
+                            <li>Secure by design</li>
+                            <li>Easy implementation</li>
+                            <li>Python optimized</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="algorithm-card">
+                    <div class="algorithm-header">
+                        <i class="fas fa-exchange-alt"></i>
+                        <h3>RSA</h3>
+                    </div>
+                    <div class="algorithm-body">
+                        <p><strong>Asymmetric Encryption</strong></p>
+                        <ul>
+                            <li>2048-bit keys</li>
+                            <li>Public-key cryptography</li>
+                            <li>Secure key exchange</li>
+                            <li>Digital signatures</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

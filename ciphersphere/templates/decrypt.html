@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Decrypt Data - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="cyber-container">
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <h2 class="cyber-title">
+                <i class="fas fa-unlock"></i>
+                Decrypt Data
+            </h2>
+            <p class="cyber-subtitle">Decrypt your secure data with the correct key</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="cyber-form">
+            {{ form.hidden_tag() }}
+            
+            <!-- Algorithm Selection -->
+            <div class="cyber-form-group">
+                {{ form.algorithm.label(class="cyber-label") }}
+                {{ form.algorithm(class="cyber-select") }}
+                <div class="algorithm-info">
+                    <div class="info-item" data-algorithm="AES">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>AES: Use the same key that was used for encryption</span>
+                    </div>
+                    <div class="info-item" data-algorithm="Fernet">
+                        <i class="fas fa-key"></i>
+                        <span>Fernet: Use the exact Fernet key from encryption</span>
+                    </div>
+                    <div class="info-item" data-algorithm="RSA">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>RSA: Use the private key corresponding to the public key used for encryption</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decryption Key -->
+            <div class="cyber-form-group">
+                {{ form.key.label(class="cyber-label") }}
+                {{ form.key(class="cyber-input", placeholder="Enter the decryption key") }}
+                <div class="key-help">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Make sure to use the exact same key that was used for encryption</span>
+                </div>
+            </div>
+
+            <!-- Content Input Options -->
+            <div class="cyber-tabs">
+                <div class="tab-buttons">
+                    <button type="button" class="tab-btn active" data-tab="text">
+                        <i class="fas fa-edit"></i>
+                        Encrypted Text
+                    </button>
+                    <button type="button" class="tab-btn" data-tab="file">
+                        <i class="fas fa-file-upload"></i>
+                        Encrypted File
+                    </button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- Text Content Tab -->
+                    <div class="tab-pane active" id="text-tab">
+                        <div class="cyber-form-group">
+                            {{ form.text_content.label(class="cyber-label") }}
+                            {{ form.text_content(class="cyber-textarea", rows="8", placeholder="Paste the encrypted text here...") }}
+                        </div>
+                    </div>
+
+                    <!-- File Upload Tab -->
+                    <div class="tab-pane" id="file-tab">
+                        <div class="cyber-form-group">
+                            {{ form.file.label(class="cyber-label") }}
+                            <div class="file-upload-area" onclick="document.getElementById('file').click()">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Click to upload encrypted file</p>
+                                <span class="file-types">Upload the encrypted file you want to decrypt</span>
+                                {{ form.file(class="cyber-file-input", id="file") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="cyber-form-actions">
+                <button type="submit" class="btn btn-warning btn-lg cyber-btn-glow">
+                    <i class="fas fa-unlock"></i>
+                    Decrypt Data
+                </button>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Decryption Page Specific Styles */
+.algorithm-info {
+    margin-top: var(--space-sm);
+    display: none;
+}
+
+.algorithm-info.active {
+    display: block;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    background: rgba(255, 170, 0, 0.1);
+    border: 1px solid rgba(255, 170, 0, 0.3);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.info-item i {
+    color: var(--warning);
+}
+
+.key-help {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+    padding: var(--space-sm);
+    background: rgba(255, 170, 0, 0.1);
+    border: 1px solid rgba(255, 170, 0, 0.2);
+    border-radius: 8px;
+    color: var(--warning);
+    font-size: var(--text-sm);
+}
+
+/* Tabs */
+.cyber-tabs {
+    margin: var(--space-xl) 0;
+}
+
+.tab-buttons {
+    display: flex;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: var(--space-lg);
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: var(--space-md) var(--space-lg);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.tab-btn.active {
+    color: var(--warning);
+    border-bottom-color: var(--warning);
+}
+
+.tab-btn:hover {
+    color: var(--text-secondary);
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* File Upload Area */
+.file-upload-area {
+    border: 2px dashed var(--border-medium);
+    border-radius: 12px;
+    padding: var(--space-2xl);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.file-upload-area:hover {
+    border-color: var(--warning);
+    background: rgba(255, 170, 0, 0.05);
+}
+
+.file-upload-area i {
+    font-size: var(--text-3xl);
+    color: var(--warning);
+    margin-bottom: var(--space-md);
+}
+
+.file-upload-area p {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+}
+
+.file-types {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+}
+
+.cyber-file-input {
+    display: none;
+}
+</style>
+
+<script>
+// Tab functionality
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const tab = this.getAttribute('data-tab');
+        
+        // Update active tab button
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Update active tab pane
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        document.getElementById(tab + '-tab').classList.add('active');
+        
+        // Clear the other input
+        if (tab === 'text') {
+            document.getElementById('file').value = '';
+        } else {
+            document.querySelector('textarea[name="text_content"]').value = '';
+        }
+    });
+});
+
+// Algorithm info display
+document.querySelector('select[name="algorithm"]').addEventListener('change', function() {
+    const algorithm = this.value;
+    document.querySelectorAll('.info-item').forEach(item => {
+        item.style.display = item.getAttribute('data-algorithm') === algorithm ? 'flex' : 'none';
+    });
+    document.querySelector('.algorithm-info').classList.add('active');
+});
+
+// File upload handling
+document.getElementById('file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const uploadArea = document.querySelector('.file-upload-area');
+        uploadArea.innerHTML = `
+            <i class="fas fa-file-check"></i>
+            <p>File selected: ${file.name}</p>
+            <span class="file-types">Size: ${(file.size / 1024).toFixed(2)} KB</span>
+        `;
+    }
+});
+
+// Initialize algorithm info
+document.querySelector('select[name="algorithm"]').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

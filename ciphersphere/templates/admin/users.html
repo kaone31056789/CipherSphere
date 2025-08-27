@@ -1,0 +1,462 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - CipherSphere Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <!-- Admin Sidebar Hover Trigger -->
+    <div class="admin-sidebar-trigger"></div>
+    
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <i class="fas fa-shield-alt"></i>
+            <span>Admin Panel</span>
+        </div>
+        
+        <nav class="admin-nav">
+            <ul>
+                <li>
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_users') }}" class="nav-item active">
+                        <i class="fas fa-users"></i>
+                        <span>User Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_files') }}" class="nav-item">
+                        <i class="fas fa-file-lock"></i>
+                        <span>File Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_activity') }}" class="nav-item">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_settings') }}" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>System Settings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('dashboard') }}" class="nav-item">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Dashboard</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Admin Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-content">
+                <h1 class="page-title">User Management</h1>
+                <div class="header-actions">
+                    <a href="{{ url_for('admin_create_user') }}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        Add User
+                    </a>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search users..." id="userSearch">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <!-- Users Table -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>All Users ({{ users|length }})</h3>
+                    <div class="table-filters">
+                        <select class="filter-select">
+                            <option>All Users</option>
+                            <option>Active Users</option>
+                            <option>Admin Users</option>
+                            <option>Recently Joined</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" class="select-all">
+                                </th>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Files</th>
+                                <th>Last Activity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr class="table-row" data-user-id="{{ user.id }}">
+                                <td>
+                                    <input type="checkbox" class="row-select">
+                                </td>
+                                <td>
+                                    <div class="user-cell">
+                                        <img src="https://via.placeholder.com/40x40/0066ff/ffffff?text={{ user.full_name[0] if user.full_name else user.username[0] }}" 
+                                             alt="{{ user.full_name or user.username }}" class="user-avatar-small">
+                                        <div class="user-info">
+                                            <div class="user-name">{{ user.full_name or user.username }}</div>
+                                            <div class="user-username">@{{ user.username }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    {% if user.is_admin %}
+                                        <span class="role-badge admin">Administrator</span>
+                                    {% else %}
+                                        <span class="role-badge user">User</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="file-count">{{ user.encrypted_files|length }}</span>
+                                </td>
+                                <td>
+                                    <span class="last-activity">
+                                        {% if user.last_login %}
+                                            {{ user.last_login.strftime('%d %b %Y') }}
+                                        {% else %}
+                                            Never
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge active">Active</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn edit" title="Edit User" onclick="editUser({{ user.id }}, '{{ user.username }}', '{{ user.full_name }}', '{{ user.email }}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="action-btn reset" title="Reset Password" onclick="resetUserPassword({{ user.id }}, '{{ user.username }}')">
+                                            <i class="fas fa-key"></i>
+                                        </button>
+                                        {% if not user.is_admin %}
+                                        <button class="action-btn delete" title="Delete User" onclick="confirmDeleteUser({{ user.id }}, '{{ user.username }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                        <div class="action-dropdown">
+                                            <button class="action-btn more" title="More Options" onclick="toggleDropdown(this)">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <button class="dropdown-item" onclick="viewUserDetails({{ user.id }})">
+                                                    <i class="fas fa-eye"></i>
+                                                    View Details
+                                                </button>
+                                                <button class="dropdown-item" onclick="viewUserActivity({{ user.id }})">
+                                                    <i class="fas fa-history"></i>
+                                                    View Activity
+                                                </button>
+                                                <div class="dropdown-divider"></div>
+                                                {% if user.is_admin %}
+                                                <button class="dropdown-item" onclick="toggleAdminStatus({{ user.id }}, false)">
+                                                    <i class="fas fa-user-minus"></i>
+                                                    Remove Admin
+                                                </button>
+                                                {% else %}
+                                                <button class="dropdown-item" onclick="toggleAdminStatus({{ user.id }}, true)">
+                                                    <i class="fas fa-user-shield"></i>
+                                                    Make Admin
+                                                </button>
+                                                {% endif %}
+                                                <button class="dropdown-item" onclick="resetUserPassword({{ user.id }})">
+                                                    <i class="fas fa-key"></i>
+                                                    Reset Password
+                                                </button>
+                                                <div class="dropdown-divider"></div>
+                                                <button class="dropdown-item" onclick="exportUserData({{ user.id }})">
+                                                    <i class="fas fa-download"></i>
+                                                    Export Data
+                                                </button>
+                                                {% if not user.is_admin %}
+                                                <button class="dropdown-item text-danger" onclick="confirmDeleteUser({{ user.id }}, '{{ user.username }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                    Delete User
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="table-pagination">
+                    <div class="pagination-info">
+                        Showing 1-{{ users|length }} of {{ users|length }} users
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="pagination-pages">
+                            <button class="pagination-page active">1</button>
+                        </span>
+                        <button class="pagination-btn" disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- User Management Modal -->
+<div class="modal" id="userModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit User</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="userForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" class="form-control" name="full_name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select class="form-control" name="role">
+                        <option value="user">User</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select class="form-control" name="status">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveUser()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// User management functionality
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('User management page loaded');
+    
+    // Search functionality
+    const searchInput = document.getElementById('userSearch');
+    if (searchInput) {
+        console.log('Search input found');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.table-row');
+            
+            rows.forEach(row => {
+                const userName = row.querySelector('.user-name').textContent.toLowerCase();
+                const userEmail = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                
+                if (userName.includes(searchTerm) || userEmail.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    } else {
+        console.error('Search input not found');
+    }
+
+    // Select all functionality
+    const selectAll = document.querySelector('.select-all');
+    const rowSelects = document.querySelectorAll('.row-select');
+    
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            rowSelects.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+
+    // Action buttons
+    document.querySelectorAll('.action-btn.edit').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Edit button clicked');
+            openUserModal();
+        });
+    });
+
+    document.querySelectorAll('.action-btn.delete').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Delete button clicked');
+            if (confirm('Are you sure you want to delete this user?')) {
+                // Delete user logic here
+                this.closest('.table-row').remove();
+            }
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.action-dropdown')) {
+            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+    });
+    
+    document.querySelectorAll('.action-btn.reset').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Reset password button clicked');
+            alert('Password reset functionality would be implemented here');
+        });
+    });
+});
+
+function openUserModal() {
+    console.log('Opening user modal');
+    const modal = document.getElementById('userModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    } else {
+        console.error('Modal not found');
+    }
+}
+
+function closeModal() {
+    console.log('Closing modal');
+    const modal = document.getElementById('userModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function saveUser() {
+    console.log('Saving user');
+    // Save user logic here
+    closeModal();
+}
+
+// Dropdown functionality
+function toggleDropdown(button) {
+    const dropdown = button.nextElementSibling;
+    const isVisible = dropdown.classList.contains('show');
+    
+    // Close all dropdowns
+    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+        menu.classList.remove('show');
+    });
+    
+    // Toggle current dropdown
+    if (!isVisible) {
+        dropdown.classList.add('show');
+    }
+}
+
+function viewUserDetails(userId) {
+    console.log('Viewing details for user:', userId);
+    // Implement view user details
+    alert('User details functionality to be implemented');
+}
+
+function viewUserActivity(userId) {
+    console.log('Viewing activity for user:', userId);
+    // Implement view user activity
+    alert('User activity functionality to be implemented');
+}
+
+function toggleAdminStatus(userId, makeAdmin) {
+    console.log('Toggling admin status for user:', userId, 'Make admin:', makeAdmin);
+    const action = makeAdmin ? 'grant admin privileges to' : 'remove admin privileges from';
+    if (confirm(`Are you sure you want to ${action} this user?`)) {
+        // Implement admin status toggle
+        alert('Admin status toggle functionality to be implemented');
+    }
+}
+
+function resetUserPassword(userId, username) {
+    console.log('Resetting password for user:', userId, username);
+    if (confirm(`Are you sure you want to reset password for user "${username}"? They will receive a new temporary password.`)) {
+        // Implement password reset
+        alert(`Password reset for ${username} - functionality to be implemented`);
+    }
+}
+
+function exportUserData(userId) {
+    console.log('Exporting data for user:', userId);
+    // Implement user data export
+    alert('User data export functionality to be implemented');
+}
+
+function editUser(userId, username, fullName, email) {
+    console.log('Editing user:', userId, username, fullName, email);
+    
+    // Open the user modal with pre-filled data
+    const modal = document.getElementById('userModal');
+    if (modal) {
+        // Pre-fill form fields if they exist
+        const usernameField = document.getElementById('editUsername');
+        const fullNameField = document.getElementById('editFullName');
+        const emailField = document.getElementById('editEmail');
+        
+        if (usernameField) usernameField.value = username;
+        if (fullNameField) fullNameField.value = fullName;
+        if (emailField) emailField.value = email;
+        
+        // Store user ID for saving later
+        modal.setAttribute('data-user-id', userId);
+        
+        modal.style.display = 'flex';
+    } else {
+        // Fallback if modal doesn't exist
+        alert(`Edit user: ${fullName || username}\nEmail: ${email}\nFeature to be fully implemented`);
+    }
+}
+
+function confirmDeleteUser(userId, username) {
+    console.log('Deleting user:', userId, username);
+    if (confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
+        // Implement user deletion
+        alert('User deletion functionality to be implemented');
+    }
+}
+</script>
+{% endblock %}

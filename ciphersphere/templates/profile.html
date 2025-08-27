@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="cyber-container">
+    <div class="profile-layout">
+        <!-- Profile Header -->
+        <div class="profile-header cyber-card">
+            <div class="profile-avatar">
+                <img src="{{ url_for('profile_picture', filename=current_user.profile_picture or 'default.jpg') }}" alt="Profile Avatar" id="profileImg">
+                <div class="avatar-overlay" onclick="document.getElementById('profilePictureInput').click();">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <form id="profilePictureForm" method="POST" enctype="multipart/form-data" style="display: none;">
+                    <input type="hidden" name="action" value="upload_picture">
+                    <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" onchange="uploadProfilePicture()">
+                </form>
+            </div>
+            <div class="profile-info">
+                <h2 class="profile-name">{{ current_user.full_name }}</h2>
+                <p class="profile-username">@{{ current_user.username }}</p>
+                <p class="profile-email">{{ current_user.email }}</p>
+                <div class="profile-badges">
+                    {% if current_user.is_admin %}
+                    <span class="badge badge-admin">
+                        <i class="fas fa-shield-alt"></i>
+                        Administrator
+                    </span>
+                    {% else %}
+                    <span class="badge badge-user">
+                        <i class="fas fa-user"></i>
+                        User
+                    </span>
+                    {% endif %}
+                    <span class="badge badge-active">
+                        <i class="fas fa-circle"></i>
+                        Active
+                    </span>
+                </div>
+            </div>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <span class="stat-number">{{ current_user.encrypted_files|length }}</span>
+                    <span class="stat-label">Files</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ current_user.activity_logs|length }}</span>
+                    <span class="stat-label">Activities</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ current_user.created_at.strftime('%b %Y') }}</span>
+                    <span class="stat-label">Joined</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <!-- Security Settings -->
+            <div class="cyber-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-lock"></i>
+                        Security Settings
+                    </h3>
+                </div>
+                
+                <!-- Change Password -->
+                <div class="security-section">
+                    <h4>Change Password</h4>
+                    <p class="section-description">Keep your account secure by regularly updating your password</p>
+                    
+                    <form method="POST" class="cyber-form">
+                        <input type="hidden" name="action" value="change_password">
+                        {{ password_form.hidden_tag() }}
+                        
+                        <div class="form-row">
+                            <div class="cyber-form-group">
+                                {{ password_form.current_password.label(class="cyber-label") }}
+                                {{ password_form.current_password(class="cyber-input") }}
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="cyber-form-group">
+                                {{ password_form.new_password.label(class="cyber-label") }}
+                                {{ password_form.new_password(class="cyber-input") }}
+                            </div>
+                            <div class="cyber-form-group">
+                                {{ password_form.confirm_new_password.label(class="cyber-label") }}
+                                {{ password_form.confirm_new_password(class="cyber-input") }}
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-key"></i>
+                            Update Password
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Security Question -->
+                <div class="security-section">
+                    <h4>Security Question</h4>
+                    <p class="section-description">Update your security question for account recovery</p>
+                    
+                    <form method="POST" class="cyber-form">
+                        <input type="hidden" name="action" value="update_security">
+                        {{ security_form.hidden_tag() }}
+                        
+                        <div class="cyber-form-group">
+                            {{ security_form.current_password.label(class="cyber-label") }}
+                            {{ security_form.current_password(class="cyber-input") }}
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="cyber-form-group">
+                                {{ security_form.security_question.label(class="cyber-label") }}
+                                {{ security_form.security_question(class="cyber-select") }}
+                            </div>
+                            <div class="cyber-form-group">
+                                {{ security_form.security_answer.label(class="cyber-label") }}
+                                {{ security_form.security_answer(class="cyber-input") }}
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-question-circle"></i>
+                            Update Security Question
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Account Information -->
+            <div class="cyber-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-user-cog"></i>
+                        Account Information
+                    </h3>
+                </div>
+                
+                <div class="account-info">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Username</label>
+                            <span>{{ current_user.username }}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Full Name</label>
+                            <span>{{ current_user.full_name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Email</label>
+                            <span>{{ current_user.email }}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Account Type</label>
+                            <span>{{ 'Administrator' if current_user.is_admin else 'Standard User' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Member Since</label>
+                            <span>{{ current_user.created_at.strftime('%B %d, %Y') }}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Last Login</label>
+                            <span>{{ current_user.last_login.strftime('%B %d, %Y at %I:%M %p') if current_user.last_login else 'Never' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Summary -->
+            <div class="cyber-card">
+                <div class="card-header">
+                    <h3>
+                        <i class="fas fa-chart-line"></i>
+                        Activity Summary
+                    </h3>
+                </div>
+                
+                <div class="activity-summary">
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-icon">
+                                <i class="fas fa-file-lock"></i>
+                            </div>
+                            <div class="summary-content">
+                                <h4>{{ current_user.encrypted_files|length }}</h4>
+                                <p>Encrypted Files</p>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div class="summary-content">
+                                <h4>{{ current_user.activity_logs|length }}</h4>
+                                <p>Total Activities</p>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-icon">
+                                <i class="fas fa-share-alt"></i>
+                            </div>
+                            <div class="summary-content">
+                                <h4>{{ current_user.shared_files_sent|length }}</h4>
+                                <p>Files Shared</p>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="summary-content">
+                                <h4>{{ current_user.shared_files_received|length }}</h4>
+                                <p>Files Received</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Profile Page Styles */
+.profile-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xl);
+    padding: var(--space-2xl);
+}
+
+.profile-avatar {
+    position: relative;
+    cursor: pointer;
+}
+
+.profile-avatar img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--cyber-blue);
+    object-fit: cover;
+}
+
+.avatar-overlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    background: var(--cyber-blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg-primary);
+    font-size: var(--text-sm);
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-name {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.profile-username {
+    color: var(--text-secondary);
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-xs);
+}
+
+.profile-email {
+    color: var(--text-tertiary);
+    font-size: var(--text-base);
+    margin-bottom: var(--space-md);
+}
+
+.profile-badges {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.badge {
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 20px;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.badge-admin {
+    background: rgba(227, 24, 55, 0.2);
+    color: var(--tesla-red);
+}
+
+.badge-user {
+    background: rgba(0, 212, 255, 0.2);
+    color: var(--cyber-blue);
+}
+
+.badge-active {
+    background: rgba(0, 255, 136, 0.2);
+    color: var(--success);
+}
+
+.profile-stats {
+    display: flex;
+    gap: var(--space-xl);
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--cyber-blue);
+}
+
+.stat-label {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+}
+
+.profile-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+}
+
+.card-header {
+    padding: var(--space-xl) var(--space-2xl);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.card-header h3 {
+    color: var(--text-primary);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.security-section {
+    padding: var(--space-2xl);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.security-section:last-child {
+    border-bottom: none;
+}
+
+.security-section h4 {
+    color: var(--text-primary);
+    font-size: var(--text-base);
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+}
+
+.section-description {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-lg);
+}
+
+.account-info {
+    padding: var(--space-2xl);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg);
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.info-item label {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+    font-weight: 500;
+}
+
+.info-item span {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.activity-summary {
+    padding: var(--space-2xl);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-lg);
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+}
+
+.summary-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: rgba(0, 212, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cyber-blue);
+    font-size: var(--text-lg);
+}
+
+.summary-content h4 {
+    color: var(--text-primary);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin-bottom: var(--space-xs);
+}
+
+.summary-content p {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+}
+
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-stats {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+function uploadProfilePicture() {
+    const form = document.getElementById('profilePictureForm');
+    const fileInput = document.getElementById('profilePictureInput');
+    
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        
+        // Check file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size must be less than 5MB');
+            return;
+        }
+        
+        // Check file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Please select a valid image file (JPEG, PNG, or GIF)');
+            return;
+        }
+        
+        // Show loading state
+        const overlay = document.querySelector('.avatar-overlay');
+        overlay.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        // Submit form
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

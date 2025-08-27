@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CipherSphere{% endblock %}</title>
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome with multiple CDN fallbacks -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Alternative Font Awesome CDN -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.5.1/css/all.css" crossorigin="anonymous" />
+    
+    <!-- Font Awesome Kit (if available) -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+</head>
+<body class="cyber-body">
+    <!-- Animated Background -->
+    <div class="cyber-bg">
+        <div class="cyber-grid"></div>
+        <div class="cyber-particles"></div>
+    </div>
+
+    <!-- Navigation -->
+    {% if current_user.is_authenticated %}
+    <nav class="navbar navbar-expand-lg cyber-navbar">
+        <div class="container">
+            <a class="navbar-brand cyber-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-shield-alt"></i> CipherSphere
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link cyber-nav-link" href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cyber-nav-link" href="{{ url_for('encrypt') }}">
+                            <i class="fas fa-lock"></i> Encrypt
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cyber-nav-link" href="{{ url_for('decrypt') }}">
+                            <i class="fas fa-unlock"></i> Decrypt
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cyber-nav-link" href="{{ url_for('vault') }}">
+                            <i class="fas fa-database"></i> Vault
+                        </a>
+                    </li>
+                    {% if current_user.is_admin %}
+                    <li class="nav-item">
+                        <a class="nav-link cyber-nav-link admin-link" href="{{ url_for('admin_dashboard') }}">
+                            <i class="fas fa-crown"></i> Admin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link cyber-nav-link admin-toggle-btn" onclick="toggleAdminPanel()" id="adminToggle">
+                            <i class="fas fa-tools"></i> Quick Admin
+                        </button>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle cyber-nav-link" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i> {{ current_user.username }}
+                        </a>
+                        <ul class="dropdown-menu cyber-dropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">
+                                <i class="fas fa-user-cog"></i> Profile
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Quick Admin Panel -->
+    {% if current_user.is_admin %}
+    <div class="quick-admin-panel" id="quickAdminPanel">
+        <div class="admin-panel-header">
+            <h4><i class="fas fa-crown"></i> Quick Admin</h4>
+            <button class="admin-panel-close" onclick="toggleAdminPanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="admin-panel-content">
+            <div class="admin-stats-mini">
+                <div class="stat-mini">
+                    <i class="fas fa-users"></i>
+                    <span class="stat-label">Total Users</span>
+                    <span class="stat-value" id="totalUsers">Loading...</span>
+                </div>
+                <div class="stat-mini">
+                    <i class="fas fa-file-shield"></i>
+                    <span class="stat-label">Total Files</span>
+                    <span class="stat-value" id="totalFiles">Loading...</span>
+                </div>
+                <div class="stat-mini">
+                    <i class="fas fa-activity"></i>
+                    <span class="stat-label">Activities Today</span>
+                    <span class="stat-value" id="activitiesToday">Loading...</span>
+                </div>
+            </div>
+            <div class="admin-quick-actions">
+                <a href="{{ url_for('admin_create_user') }}" class="quick-action-btn">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Add User</span>
+                </a>
+                <a href="{{ url_for('admin_users') }}" class="quick-action-btn">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Manage Users</span>
+                </a>
+                <a href="{{ url_for('admin_files') }}" class="quick-action-btn">
+                    <i class="fas fa-file-lock"></i>
+                    <span>Manage Files</span>
+                </a>
+                <a href="{{ url_for('admin_activity') }}" class="quick-action-btn">
+                    <i class="fas fa-chart-line"></i>
+                    <span>View Activity</span>
+                </a>
+                <a href="{{ url_for('admin_settings') }}" class="quick-action-btn">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="{{ url_for('admin_dashboard') }}" class="quick-action-btn primary">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Full Dashboard</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="admin-panel-overlay" id="adminPanelOverlay" onclick="toggleAdminPanel()"></div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show cyber-alert" role="alert">
+                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }}"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mt-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="cyber-footer mt-5">
+        <div class="container text-center">
+            <p>&copy; 2025 CipherSphere. Securing your digital world with futuristic encryption.</p>
+            <p class="made-by">Made by <span class="creator-name">Parikshit Dahiya</span></p>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="cyber-loader">
+            <div class="loader-ring"></div>
+            <div class="loader-text">Processing...</div>
+        </div>
+    </div>
+
+    <!-- Custom Scripts -->
+    <script>
+        // Initialize cyber effects
+        $(document).ready(function() {
+            initCyberEffects();
+            initFormValidation();
+        });
+    </script>
+</body>
+</html>

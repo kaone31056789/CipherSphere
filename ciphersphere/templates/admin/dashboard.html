@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <!-- Admin Sidebar Hover Trigger -->
+    <div class="admin-sidebar-trigger"></div>
+    
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <i class="fas fa-shield-alt"></i>
+            <span>Admin Panel</span>
+        </div>
+        
+        <nav class="admin-nav">
+            <ul>
+                <li>
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-item active">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_users') }}" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>User Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_files') }}" class="nav-item">
+                        <i class="fas fa-file-lock"></i>
+                        <span>File Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_activity') }}" class="nav-item">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_settings') }}" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>System Settings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('dashboard') }}" class="nav-item">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Dashboard</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Admin Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-content">
+                <h1 class="page-title">Admin Dashboard</h1>
+                <div class="header-actions">
+                    <span class="admin-badge">Administrator</span>
+                    <div class="user-info">
+                        <span>System Administrator</span>
+                        <div class="admin-avatar">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ total_users }}</h3>
+                        <p>Total Users</p>
+                        <span class="stat-change positive">+{{ new_users_today }} today</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <i class="fas fa-file-lock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ total_files }}</h3>
+                        <p>Encrypted Files</p>
+                        <span class="stat-change positive">+{{ new_files_today }} today</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-activity"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ total_activities }}</h3>
+                        <p>Activities Today</p>
+                        <span class="stat-change neutral">{{ active_users }} active users</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon info">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>98.9%</h3>
+                        <p>System Uptime</p>
+                        <span class="stat-change positive">All systems operational</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Tables Row -->
+            <div class="dashboard-row">
+                <!-- Recent Activity -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Recent Activity</h3>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <div class="activity-list">
+                        {% for activity in recent_activities %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-{{ activity.icon }}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>{{ activity.description }}</p>
+                                <span class="activity-time">{{ activity.timestamp.strftime('%H:%M - %d %b') }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- User Growth Chart -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>User Growth</h3>
+                        <select class="time-filter">
+                            <option>Last 7 days</option>
+                            <option>Last 30 days</option>
+                            <option>Last 3 months</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="userGrowthChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>System Status</h3>
+                    <span class="status-indicator online"></span>
+                </div>
+                <div class="system-status">
+                    <div class="status-item">
+                        <div class="status-label">Database</div>
+                        <div class="status-value online">Online</div>
+                        <div class="status-metric">Response: 2ms</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">File System</div>
+                        <div class="status-value online">Online</div>
+                        <div class="status-metric">Usage: 45%</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Encryption Service</div>
+                        <div class="status-value online">Online</div>
+                        <div class="status-metric">Load: Low</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Authentication</div>
+                        <div class="status-value online">Online</div>
+                        <div class="status-metric">Sessions: {{ active_sessions }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+// Simple chart for user growth (you can replace with Chart.js)
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('userGrowthChart');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        // Simple line chart placeholder
+        ctx.strokeStyle = '#0066ff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(50, 150);
+        ctx.lineTo(100, 120);
+        ctx.lineTo(150, 100);
+        ctx.lineTo(200, 80);
+        ctx.lineTo(250, 60);
+        ctx.lineTo(300, 40);
+        ctx.lineTo(350, 30);
+        ctx.stroke();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+
+{% block title %}Shared Files - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="cyber-container">
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <h2 class="cyber-title">
+                <i class="fas fa-share-alt"></i>
+                Shared Files
+            </h2>
+            <p class="cyber-subtitle">Manage your shared encrypted data</p>
+        </div>
+
+        <!-- Shared Files Tabs -->
+        <div class="cyber-tabs">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('shared-with-me')">
+                    <i class="fas fa-inbox"></i>
+                    Shared with Me ({{ shared_with_me|length }})
+                </button>
+                <button class="tab-btn" onclick="switchTab('shared-by-me')">
+                    <i class="fas fa-paper-plane"></i>
+                    Shared by Me ({{ shared_by_me|length }})
+                </button>
+            </div>
+
+            <!-- Shared with Me Tab -->
+            <div id="shared-with-me" class="tab-content active">
+                {% if shared_with_me %}
+                <div class="shared-files-grid">
+                    {% for share in shared_with_me %}
+                    <div class="shared-file-card">
+                        <div class="file-header">
+                            <div class="file-icon">
+                                <i class="fas fa-{{ 'file-text' if share.content_type == 'text' else 'file-archive' }}"></i>
+                            </div>
+                            <div class="file-info">
+                                <h4>{{ share.content_type|title }} Content</h4>
+                                <p>From: {{ share.owner.full_name or share.owner.username }}</p>
+                                <span class="share-date">{{ share.created_at.strftime('%d %b %Y') }}</span>
+                            </div>
+                            <div class="file-status">
+                                {% if share.expires_at %}
+                                    {% if share.expires_at > moment() %}
+                                        <span class="status-badge active">Active</span>
+                                        <small>Expires: {{ share.expires_at.strftime('%d %b %Y') }}</small>
+                                    {% else %}
+                                        <span class="status-badge expired">Expired</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="status-badge permanent">Permanent</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="file-details">
+                            <div class="detail-row">
+                                <span>Algorithm:</span>
+                                <span class="algorithm-badge">{{ share.algorithm }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Access Level:</span>
+                                <span class="access-badge access-{{ share.access_level }}">{{ share.access_level|title }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="file-actions">
+                            {% if not share.expires_at or share.expires_at > moment() %}
+                                <a href="{{ url_for('view_shared', share_id=share.id) }}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                    View
+                                </a>
+                                {% if share.access_level in ['download', 'decrypt'] %}
+                                <button class="btn btn-secondary btn-sm" onclick="downloadShared({{ share.id }})">
+                                    <i class="fas fa-download"></i>
+                                    Download
+                                </button>
+                                {% endif %}
+                                {% if share.access_level == 'decrypt' %}
+                                <button class="btn btn-success btn-sm" onclick="viewKey({{ share.id }})">
+                                    <i class="fas fa-key"></i>
+                                    View Key
+                                </button>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">Expired</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No Shared Files</h3>
+                    <p>You haven't received any shared encrypted files yet.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Shared by Me Tab -->
+            <div id="shared-by-me" class="tab-content">
+                {% if shared_by_me %}
+                <div class="shared-files-grid">
+                    {% for share in shared_by_me %}
+                    <div class="shared-file-card">
+                        <div class="file-header">
+                            <div class="file-icon">
+                                <i class="fas fa-{{ 'file-text' if share.content_type == 'text' else 'file-archive' }}"></i>
+                            </div>
+                            <div class="file-info">
+                                <h4>{{ share.content_type|title }} Content</h4>
+                                <p>Shared with: {{ share.shared_with.full_name or share.shared_with.username }}</p>
+                                <span class="share-date">{{ share.created_at.strftime('%d %b %Y') }}</span>
+                            </div>
+                            <div class="file-status">
+                                {% if share.expires_at %}
+                                    {% if share.expires_at > moment() %}
+                                        <span class="status-badge active">Active</span>
+                                        <small>Expires: {{ share.expires_at.strftime('%d %b %Y') }}</small>
+                                    {% else %}
+                                        <span class="status-badge expired">Expired</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="status-badge permanent">Permanent</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="file-details">
+                            <div class="detail-row">
+                                <span>Algorithm:</span>
+                                <span class="algorithm-badge">{{ share.algorithm }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Access Level:</span>
+                                <span class="access-badge access-{{ share.access_level }}">{{ share.access_level|title }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="file-actions">
+                            <button class="btn btn-warning btn-sm" onclick="revokeShare({{ share.id }})">
+                                <i class="fas fa-times"></i>
+                                Revoke
+                            </button>
+                            <button class="btn btn-info btn-sm" onclick="extendShare({{ share.id }})">
+                                <i class="fas fa-clock"></i>
+                                Extend
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-paper-plane"></i>
+                    <h3>No Shared Files</h3>
+                    <p>You haven't shared any encrypted files yet.</p>
+                    <a href="{{ url_for('encrypt') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Create & Share
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key View Modal -->
+<div class="modal" id="keyModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Encryption Key</h3>
+            <button class="modal-close" onclick="closeKeyModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="key-display-container">
+                <label>Decryption Key:</label>
+                <div class="key-container">
+                    <input type="text" class="key-display" id="sharedKey" readonly>
+                    <button class="btn btn-sm btn-secondary" onclick="copySharedKey()">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="security-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Keep this key secure. Anyone with this key can decrypt the shared content.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab(tabId) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabId).classList.add('active');
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+}
+
+function viewKey(shareId) {
+    fetch(`/get_shared_key/${shareId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('sharedKey').value = data.key;
+                document.getElementById('keyModal').style.display = 'flex';
+            } else {
+                showNotification('Failed to retrieve key', 'error');
+            }
+        });
+}
+
+function closeKeyModal() {
+    document.getElementById('keyModal').style.display = 'none';
+}
+
+function copySharedKey() {
+    const keyField = document.getElementById('sharedKey');
+    keyField.select();
+    document.execCommand('copy');
+    showNotification('Key copied to clipboard!', 'success');
+}
+
+function downloadShared(shareId) {
+    window.location.href = `/download_shared/${shareId}`;
+}
+
+function revokeShare(shareId) {
+    if (confirm('Are you sure you want to revoke this share? The recipient will lose access immediately.')) {
+        fetch(`/revoke_share/${shareId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Share revoked successfully', 'success');
+                    location.reload();
+                } else {
+                    showNotification('Failed to revoke share', 'error');
+                }
+            });
+    }
+}
+
+function extendShare(shareId) {
+    const days = prompt('Extend share by how many days?');
+    if (days && !isNaN(days)) {
+        fetch(`/extend_share/${shareId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ days: parseInt(days) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Share extended successfully', 'success');
+                location.reload();
+            } else {
+                showNotification('Failed to extend share', 'error');
+            }
+        });
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
+
+<style>
+.cyber-tabs {
+    margin-top: 2rem;
+}
+
+.tab-nav {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 1rem 1.5rem;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tab-btn.active {
+    color: var(--cyber-blue);
+    border-bottom-color: var(--cyber-blue);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.shared-files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.shared-file-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.shared-file-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.file-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.file-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 212, 255, 0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--cyber-blue);
+}
+
+.file-info {
+    flex: 1;
+}
+
+.file-info h4 {
+    margin: 0 0 0.25rem 0;
+    color: var(--text-primary);
+}
+
+.file-info p {
+    margin: 0 0 0.25rem 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.share-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.file-status {
+    text-align: right;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 0.25rem;
+}
+
+.status-badge.active {
+    background: rgba(0, 255, 136, 0.2);
+    color: var(--success);
+}
+
+.status-badge.expired {
+    background: rgba(255, 51, 102, 0.2);
+    color: var(--error);
+}
+
+.status-badge.permanent {
+    background: rgba(0, 212, 255, 0.2);
+    color: var(--cyber-blue);
+}
+
+.file-details {
+    margin-bottom: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.algorithm-badge {
+    background: rgba(255, 170, 0, 0.2);
+    color: var(--warning);
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+}
+
+.access-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.access-badge.access-view {
+    background: rgba(0, 212, 255, 0.2);
+    color: var(--cyber-blue);
+}
+
+.access-badge.access-download {
+    background: rgba(255, 170, 0, 0.2);
+    color: var(--warning);
+}
+
+.access-badge.access-decrypt {
+    background: rgba(0, 255, 136, 0.2);
+    color: var(--success);
+}
+
+.file-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+}
+
+.empty-state h3 {
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.key-display-container {
+    margin-bottom: 1rem;
+}
+
+.security-warning {
+    background: rgba(255, 170, 0, 0.1);
+    border: 1px solid rgba(255, 170, 0, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.security-warning i {
+    color: var(--warning);
+}
+</style>
+{% endblock %}

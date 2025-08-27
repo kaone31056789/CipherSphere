@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Login - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 col-xl-5">
+            <div class="cyber-auth-card">
+                <div class="auth-header">
+                    <div class="auth-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <h2 class="auth-title">Access CipherSphere</h2>
+                    <p class="auth-subtitle">Enter your credentials to continue</p>
+                </div>
+                
+                <form method="POST" class="auth-form">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="cyber-input-group">
+                        <i class="fas fa-user input-icon"></i>
+                        {{ form.username(class="form-control cyber-input", placeholder="Username") }}
+                        {% if form.username.errors %}
+                            <div class="error-text">
+                                {% for error in form.username.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="cyber-input-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        {{ form.password(class="form-control cyber-input", placeholder="Password") }}
+                        {% if form.password.errors %}
+                            <div class="error-text">
+                                {% for error in form.password.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn cyber-btn-primary w-100 auth-submit">
+                        <span class="btn-text">Authenticate</span>
+                        <div class="btn-loader">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+                </form>
+                
+                <div class="auth-links">
+                    <a href="{{ url_for('forgot_password') }}" class="cyber-link">
+                        <i class="fas fa-question-circle"></i> Forgot Password?
+                    </a>
+                </div>
+                
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                
+                <div class="auth-register">
+                    <p>New to CipherSphere?</p>
+                    <a href="{{ url_for('register') }}" class="btn cyber-btn-secondary w-100">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content cyber-modal">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-key"></i> Password Recovery
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="forgotPasswordForm">
+                    <div class="cyber-input-group">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" class="form-control cyber-input" name="username" placeholder="Username" required>
+                    </div>
+                    <div class="cyber-input-group">
+                        <i class="fas fa-question input-icon"></i>
+                        <input type="text" class="form-control cyber-input" name="security_answer" placeholder="Security Answer" required>
+                    </div>
+                    <p class="text-muted small">
+                        <i class="fas fa-info-circle"></i>
+                        Answer your security question to reset your password
+                    </p>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn cyber-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn cyber-btn-primary" onclick="recoverPassword()">
+                    <i class="fas fa-unlock"></i> Recover
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function recoverPassword() {
+    // Add password recovery logic here
+    showNotification('Password recovery feature will be implemented', 'info');
+}
+</script>
+{% endblock %}

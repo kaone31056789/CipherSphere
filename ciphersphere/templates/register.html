@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Register - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-6">
+            <div class="cyber-auth-card">
+                <div class="auth-header">
+                    <div class="auth-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h2 class="auth-title">Join CipherSphere</h2>
+                    <p class="auth-subtitle">Create your secure account</p>
+                </div>
+                
+                {% if error %}
+                    <div class="alert alert-danger cyber-alert">
+                        <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                        {% if suggestions %}
+                            <div class="mt-2">
+                                <strong>Suggested usernames:</strong>
+                                <div class="username-suggestions">
+                                    {% for suggestion in suggestions %}
+                                        <span class="suggestion-badge" onclick="selectUsername('{{ suggestion }}')">{{ suggestion }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                <form method="POST" class="auth-form" id="registerForm">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="cyber-input-group">
+                                <i class="fas fa-id-card input-icon"></i>
+                                {{ form.full_name(class="form-control cyber-input", placeholder="Full Name") }}
+                                {% if form.full_name.errors %}
+                                    <div class="error-text">
+                                        {% for error in form.full_name.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="cyber-input-group">
+                                <i class="fas fa-user input-icon"></i>
+                                {{ form.username(class="form-control cyber-input", placeholder="Username", onblur="checkUsername()") }}
+                                <div class="username-status" id="usernameStatus"></div>
+                                {% if form.username.errors %}
+                                    <div class="error-text">
+                                        {% for error in form.username.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="cyber-input-group">
+                        <i class="fas fa-envelope input-icon"></i>
+                        {{ form.email(class="form-control cyber-input", placeholder="Email Address") }}
+                        {% if form.email.errors %}
+                            <div class="error-text">
+                                {% for error in form.email.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="cyber-input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                {{ form.password(class="form-control cyber-input", placeholder="Password", oninput="checkPasswordStrength()") }}
+                                <div class="password-strength" id="passwordStrength"></div>
+                                {% if form.password.errors %}
+                                    <div class="error-text">
+                                        {% for error in form.password.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="cyber-input-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                {{ form.confirm_password(class="form-control cyber-input", placeholder="Confirm Password") }}
+                                {% if form.confirm_password.errors %}
+                                    <div class="error-text">
+                                        {% for error in form.confirm_password.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="cyber-input-group">
+                        <i class="fas fa-question-circle input-icon"></i>
+                        {{ form.security_question(class="form-control cyber-select") }}
+                        {% if form.security_question.errors %}
+                            <div class="error-text">
+                                {% for error in form.security_question.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="cyber-input-group">
+                        <i class="fas fa-shield-alt input-icon"></i>
+                        {{ form.security_answer(class="form-control cyber-input", placeholder="Security Answer") }}
+                        {% if form.security_answer.errors %}
+                            <div class="error-text">
+                                {% for error in form.security_answer.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn cyber-btn-primary w-100 auth-submit">
+                        <span class="btn-text">Create Account</span>
+                        <div class="btn-loader">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+                </form>
+                
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                
+                <div class="auth-login">
+                    <p>Already have an account?</p>
+                    <a href="{{ url_for('login') }}" class="btn cyber-btn-secondary w-100">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectUsername(username) {
+    document.getElementById('username').value = username;
+    checkUsername();
+}
+
+function checkUsername() {
+    const username = document.getElementById('username').value;
+    const statusDiv = document.getElementById('usernameStatus');
+    
+    if (username.length < 3) {
+        statusDiv.innerHTML = '';
+        return;
+    }
+    
+    fetch(`/check_username?username=${username}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.available) {
+                statusDiv.innerHTML = '<i class="fas fa-check text-success"></i> Username available';
+                statusDiv.className = 'username-status available';
+            } else {
+                statusDiv.innerHTML = '<i class="fas fa-times text-danger"></i> Username taken';
+                statusDiv.className = 'username-status taken';
+                
+                if (data.suggestions) {
+                    const suggestionsHtml = data.suggestions.map(s => 
+                        `<span class="suggestion-badge" onclick="selectUsername('${s}')">${s}</span>`
+                    ).join('');
+                    statusDiv.innerHTML += `<div class="mt-2">Suggestions: ${suggestionsHtml}</div>`;
+                }
+            }
+        });
+}
+
+function checkPasswordStrength() {
+    const password = document.getElementById('password').value;
+    const strengthDiv = document.getElementById('passwordStrength');
+    
+    let strength = 0;
+    let feedback = [];
+    
+    if (password.length >= 8) strength++;
+    else feedback.push('8+ characters');
+    
+    if (/[A-Z]/.test(password)) strength++;
+    else feedback.push('uppercase');
+    
+    if (/[a-z]/.test(password)) strength++;
+    else feedback.push('lowercase');
+    
+    if (/[0-9]/.test(password)) strength++;
+    else feedback.push('number');
+    
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    else feedback.push('special character');
+    
+    const strengthLevels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+    const strengthColors = ['#ff4444', '#ff8844', '#ffaa44', '#44aa44', '#44ff44'];
+    
+    if (password.length > 0) {
+        strengthDiv.innerHTML = `
+            <div class="strength-bar">
+                <div class="strength-fill" style="width: ${(strength/5)*100}%; background: ${strengthColors[strength-1]}"></div>
+            </div>
+            <span class="strength-text" style="color: ${strengthColors[strength-1]}">${strengthLevels[strength-1]}</span>
+            ${feedback.length > 0 ? `<span class="strength-feedback">Need: ${feedback.join(', ')}</span>` : ''}
+        `;
+    } else {
+        strengthDiv.innerHTML = '';
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+
+{% block title %}Activity Logs - CipherSphere Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <!-- Admin Sidebar Hover Trigger -->
+    <div class="admin-sidebar-trigger"></div>
+    
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <i class="fas fa-shield-alt"></i>
+            <span>Admin Panel</span>
+        </div>
+        
+        <nav class="admin-nav">
+            <ul>
+                <li>
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_users') }}" class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>User Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_files') }}" class="nav-item">
+                        <i class="fas fa-file-lock"></i>
+                        <span>File Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_activity') }}" class="nav-item active">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin_settings') }}" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>System Settings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('dashboard') }}" class="nav-item">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Dashboard</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Admin Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-content">
+                <h1 class="page-title">Activity Logs</h1>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search activities..." id="activitySearch">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <!-- Activity Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ total_activities }}</h3>
+                        <p>Total Activities</p>
+                        <span class="stat-change positive">All time</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ today_activities }}</h3>
+                        <p>Today's Activities</p>
+                        <span class="stat-change positive">{{ ((today_activities / total_activities * 100) if total_activities > 0 else 0) | round(1) }}% of total</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ active_users|length }}</h3>
+                        <p>Active Users</p>
+                        <span class="stat-change neutral">Top contributors</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon info">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ activities.items|length }}</h3>
+                        <p>Recent Entries</p>
+                        <span class="stat-change positive">Last 50 activities</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Charts Row -->
+            <div class="dashboard-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); margin-bottom: var(--space-2xl);">
+                <!-- Most Active Users -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Most Active Users</h3>
+                        <span class="view-all">Top 10</span>
+                    </div>
+                    <div class="activity-list">
+                        {% for user in active_users %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <div class="user-avatar-small" data-initial="{{ user.full_name[0] if user.full_name else user.username[0] }}">
+                                    {{ user.full_name[0] if user.full_name else user.username[0] }}
+                                </div>
+                            </div>
+                            <div class="activity-content">
+                                <p><strong>{{ user.full_name or user.username }}</strong></p>
+                                <span class="activity-time">{{ user.activity_count }} activities</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Activity Types -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>Activity Distribution</h3>
+                        <select class="time-filter">
+                            <option>Last 24 hours</option>
+                            <option>Last 7 days</option>
+                            <option>Last 30 days</option>
+                        </select>
+                    </div>
+                    <div class="chart-container" style="padding: var(--space-xl);">
+                        <div class="activity-type-stats">
+                            <div class="activity-type">
+                                <span class="type-label">Login/Logout</span>
+                                <div class="type-bar">
+                                    <div class="type-fill" style="width: 40%; background: var(--cyber-blue);"></div>
+                                </div>
+                                <span class="type-count">40%</span>
+                            </div>
+                            <div class="activity-type">
+                                <span class="type-label">File Operations</span>
+                                <div class="type-bar">
+                                    <div class="type-fill" style="width: 35%; background: var(--success);"></div>
+                                </div>
+                                <span class="type-count">35%</span>
+                            </div>
+                            <div class="activity-type">
+                                <span class="type-label">Admin Actions</span>
+                                <div class="type-bar">
+                                    <div class="type-fill" style="width: 15%; background: var(--tesla-red);"></div>
+                                </div>
+                                <span class="type-count">15%</span>
+                            </div>
+                            <div class="activity-type">
+                                <span class="type-label">Other</span>
+                                <div class="type-bar">
+                                    <div class="type-fill" style="width: 10%; background: var(--warning);"></div>
+                                </div>
+                                <span class="type-count">10%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log Table -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>Activity Log</h3>
+                    <div class="table-filters">
+                        <select class="filter-select">
+                            <option>All Activities</option>
+                            <option>User Actions</option>
+                            <option>Admin Actions</option>
+                            <option>System Events</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>IP Address</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in activities.items %}
+                            <tr>
+                                <td>
+                                    <div class="time-info">
+                                        <strong>{{ activity.timestamp.strftime('%H:%M:%S') }}</strong>
+                                        <p>{{ activity.timestamp.strftime('%Y-%m-%d') }}</p>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if activity.user %}
+                                    <div class="user-info-cell">
+                                        <div class="user-avatar-small" data-initial="{{ activity.user.full_name[0] if activity.user.full_name else activity.user.username[0] }}">
+                                            {{ activity.user.full_name[0] if activity.user.full_name else activity.user.username[0] }}
+                                        </div>
+                                        <div class="user-details">
+                                            <h4>{{ activity.user.full_name or activity.user.username }}</h4>
+                                            <p>{{ activity.user.username }}</p>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <span class="system-user">System</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="activity-action">{{ activity.action }}</span>
+                                </td>
+                                <td>
+                                    <span class="ip-address">{{ activity.ip_address or '127.0.0.1' }}</span>
+                                </td>
+                                <td>
+                                    <div class="activity-details">
+                                        {% if 'login' in activity.action.lower() %}
+                                            <i class="fas fa-sign-in-alt activity-icon-small success"></i>
+                                        {% elif 'logout' in activity.action.lower() %}
+                                            <i class="fas fa-sign-out-alt activity-icon-small warning"></i>
+                                        {% elif 'file' in activity.action.lower() %}
+                                            <i class="fas fa-file activity-icon-small primary"></i>
+                                        {% elif 'admin' in activity.action.lower() %}
+                                            <i class="fas fa-shield-alt activity-icon-small danger"></i>
+                                        {% else %}
+                                            <i class="fas fa-info-circle activity-icon-small info"></i>
+                                        {% endif %}
+                                        <span>{{ activity.details or 'No additional details' }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="table-pagination">
+                    <div class="pagination-info">
+                        Showing {{ (activities.page - 1) * activities.per_page + 1 }}-{{ activities.page * activities.per_page if activities.page * activities.per_page < activities.total else activities.total }} of {{ activities.total }} activities
+                    </div>
+                    <div class="pagination-controls">
+                        {% if activities.has_prev %}
+                        <a href="{{ url_for('admin_activity', page=activities.prev_num) }}" class="pagination-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                        {% else %}
+                        <button class="pagination-btn" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        {% endif %}
+                        
+                        <span class="pagination-pages">
+                            {% for page_num in activities.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != activities.page %}
+                                    <a href="{{ url_for('admin_activity', page=page_num) }}" class="pagination-page">{{ page_num }}</a>
+                                    {% else %}
+                                    <button class="pagination-page active">{{ page_num }}</button>
+                                    {% endif %}
+                                {% else %}
+                                <span class="pagination-ellipsis">…</span>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        
+                        {% if activities.has_next %}
+                        <a href="{{ url_for('admin_activity', page=activities.next_num) }}" class="pagination-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% else %}
+                        <button class="pagination-btn" disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+/* Activity Type Statistics */
+.activity-type-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.activity-type {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.type-label {
+    min-width: 120px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.type-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.type-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.type-count {
+    min-width: 40px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+}
+
+/* Activity Icons */
+.activity-icon-small {
+    width: 16px;
+    height: 16px;
+    margin-right: var(--space-sm);
+    font-size: 12px;
+}
+
+.activity-icon-small.success { color: var(--success); }
+.activity-icon-small.warning { color: var(--warning); }
+.activity-icon-small.primary { color: var(--cyber-blue); }
+.activity-icon-small.danger { color: var(--tesla-red); }
+.activity-icon-small.info { color: var(--info); }
+
+.activity-details {
+    display: flex;
+    align-items: center;
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+}
+
+.time-info strong {
+    color: var(--text-primary);
+    font-size: var(--text-base);
+}
+
+.time-info p {
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: var(--text-xs);
+}
+
+.system-user {
+    color: var(--warning);
+    font-weight: 600;
+    font-style: italic;
+}
+
+.activity-action {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.ip-address {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+}
+</style>
+
+<script>
+// Activity search functionality
+document.getElementById('activitySearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('.admin-table tbody tr');
+    
+    rows.forEach(row => {
+        const action = row.querySelector('.activity-action').textContent.toLowerCase();
+        const userCell = row.querySelector('.user-details h4');
+        const userName = userCell ? userCell.textContent.toLowerCase() : '';
+        
+        if (action.includes(searchTerm) || userName.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,988 @@
+{% extends "base.html" %}
+
+{% block title %}Encrypt Data - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="cyber-container">
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <h2 class="cyber-title">
+                <i class="fas fa-lock"></i>
+                Encrypt Data
+            </h2>
+            <p class="cyber-subtitle">Secure your data with advanced encryption algorithms</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="cyber-form">
+            {{ form.hidden_tag() }}
+            
+            <!-- Algorithm Selection -->
+            <div class="cyber-form-group">
+                {{ form.algorithm.label(class="cyber-label") }}
+                {{ form.algorithm(class="cyber-select") }}
+                <div class="algorithm-info">
+                    <div class="info-item" data-algorithm="AES">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>AES: Fast, secure symmetric encryption. Best for large files.</span>
+                    </div>
+                    <div class="info-item" data-algorithm="Fernet">
+                        <i class="fas fa-key"></i>
+                        <span>Fernet: High-level symmetric encryption with built-in authentication.</span>
+                    </div>
+                    <div class="info-item" data-algorithm="RSA">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>RSA: Asymmetric encryption. Secure but slower for large data.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Encryption Key -->
+            <div class="cyber-form-group">
+                {{ form.key.label(class="cyber-label") }}
+                <div class="key-input-container">
+                    {{ form.key(class="cyber-input", placeholder="Leave blank for auto-generation", id="encryptionKey") }}
+                    <div class="key-actions">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="generateKey()">
+                            <i class="fas fa-random"></i>
+                            Generate
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" onclick="toggleAutoGenerate()">
+                            <i class="fas fa-sync" id="autoIcon"></i>
+                            <span id="autoText">Auto</span>
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm" onclick="copyKey()">
+                            <i class="fas fa-copy"></i>
+                            Copy
+                        </button>
+                    </div>
+                </div>
+                <div class="key-info">
+                    <span class="key-strength" id="keyStrength"></span>
+                    <span class="key-algorithm" id="keyAlgorithm">AES Compatible</span>
+                </div>
+                <div class="auto-generate-notice" id="autoNotice" style="display: none;">
+                    <i class="fas fa-info-circle"></i>
+                    Auto-generation enabled. Key will update every 5 seconds.
+                </div>
+            </div>
+
+            <!-- Content Input Options -->
+            <div class="cyber-tabs">
+                <div class="tab-buttons">
+                    <button type="button" class="tab-btn active" data-tab="text">
+                        <i class="fas fa-edit"></i>
+                        Text Content
+                    </button>
+                    <button type="button" class="tab-btn" data-tab="file">
+                        <i class="fas fa-file-upload"></i>
+                        Upload File
+                    </button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- Text Content Tab -->
+                    <div class="tab-pane active" id="text-tab">
+                        <div class="cyber-form-group">
+                            {{ form.text_content.label(class="cyber-label") }}
+                            {{ form.text_content(class="cyber-textarea", rows="8", placeholder="Enter the text you want to encrypt...") }}
+                        </div>
+                    </div>
+
+                    <!-- File Upload Tab -->
+                    <div class="tab-pane" id="file-tab">
+                        <div class="cyber-form-group">
+                            {{ form.file.label(class="cyber-label") }}
+                            <div class="file-upload-area" onclick="triggerFileInput()">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="upload-content">
+                                    <p class="upload-text">Click to upload or drag and drop</p>
+                                    <div class="file-types">
+                                        <p class="file-types-title">Supported file types:</p>
+                                        <div class="file-type-categories">
+                                            <div class="file-category">
+                                                <span class="category-title">Documents</span>
+                                                <span class="category-types">TXT, PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX</span>
+                                            </div>
+                                            <div class="file-category">
+                                                <span class="category-title">Images</span>
+                                                <span class="category-types">JPG, JPEG, PNG, GIF, BMP, WEBP, SVG</span>
+                                            </div>
+                                            <div class="file-category">
+                                                <span class="category-title">Archives</span>
+                                                <span class="category-types">ZIP, RAR, 7Z, TAR, GZ</span>
+                                            </div>
+                                            <div class="file-category">
+                                                <span class="category-title">Media</span>
+                                                <span class="category-types">MP3, WAV, MP4, AVI, MKV, MOV</span>
+                                            </div>
+                                            <div class="file-category">
+                                                <span class="category-title">Code</span>
+                                                <span class="category-types">JSON, XML, CSV, MD, PY, JS, CSS, HTML</span>
+                                            </div>
+                                        </div>
+                                        <p class="file-size-limit">Maximum file size: 50MB</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {{ form.file(class="cyber-file-input", id="file", accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.bmp,.webp,.svg,.zip,.rar,.7z,.tar,.gz,.mp3,.wav,.mp4,.avi,.mkv,.mov,.json,.xml,.csv,.log,.md,.py,.js,.css,.html") }}
+                            <div class="file-preview" id="filePreview" style="display: none;">
+                                <div class="file-info">
+                                    <i class="fas fa-file"></i>
+                                    <span class="file-name"></span>
+                                    <span class="file-size"></span>
+                                    <button type="button" class="remove-file" onclick="removeFile()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div class="cyber-form-group">
+                <div class="cyber-checkbox-group">
+                    {{ form.save_to_vault(class="cyber-checkbox") }}
+                    {{ form.save_to_vault.label(class="cyber-checkbox-label") }}
+                    <span class="checkbox-help">Save encrypted data to your personal vault for easy access</span>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="cyber-form-actions">
+                <button type="submit" class="btn btn-primary btn-lg cyber-btn-glow">
+                    <i class="fas fa-lock"></i>
+                    Encrypt Data
+                </button>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Encryption Page Specific Styles */
+.algorithm-info {
+    margin-top: var(--space-sm);
+    display: none;
+}
+
+.algorithm-info.active {
+    display: block;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.info-item i {
+    color: var(--cyber-blue);
+}
+
+/* Tabs */
+.cyber-tabs {
+    margin: var(--space-xl) 0;
+}
+
+.tab-buttons {
+    display: flex;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: var(--space-lg);
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: var(--space-md) var(--space-lg);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.tab-btn.active {
+    color: var(--cyber-blue);
+    border-bottom-color: var(--cyber-blue);
+}
+
+.tab-btn:hover {
+    color: var(--text-secondary);
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* File Upload Area */
+.file-upload-area {
+    border: 2px dashed rgba(0, 212, 255, 0.5);
+    border-radius: 12px;
+    padding: var(--space-lg);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(0, 212, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.file-upload-area:hover {
+    border-color: var(--cyber-blue);
+    background: rgba(0, 212, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.file-upload-area.dragover {
+    border-color: var(--success-color);
+    background: rgba(0, 255, 127, 0.1);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    color: var(--cyber-blue);
+    margin-bottom: var(--space-md);
+}
+
+.upload-content {
+    max-width: 100%;
+}
+
+.upload-text {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+}
+
+.file-types {
+    margin-top: var(--space-md);
+}
+
+.file-types-title {
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+    display: block;
+}
+
+.file-type-categories {
+    display: grid;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.file-category {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--space-sm);
+    background: rgba(0, 212, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.category-title {
+    color: var(--cyber-blue);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.category-types {
+    color: var(--text-tertiary);
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+.file-size-limit {
+    color: var(--warning-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: var(--space-sm);
+}
+
+.file-preview {
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 8px;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.file-info i {
+    color: var(--cyber-blue);
+    font-size: 1.2rem;
+}
+
+.file-name {
+    flex: 1;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.file-size {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.remove-file {
+    background: none;
+    border: none;
+    color: var(--error-color);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.remove-file:hover {
+    background: rgba(255, 0, 0, 0.1);
+}
+
+.cyber-file-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.file-upload-area.file-selected {
+    border-color: var(--success-color);
+    background: rgba(0, 255, 127, 0.1);
+}
+
+.file-upload-area.file-selected .upload-icon {
+    color: var(--success-color);
+}
+
+/* Checkbox Group */
+.cyber-checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+}
+
+.cyber-checkbox {
+    margin-top: 2px;
+}
+
+.checkbox-help {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+    margin-top: var(--space-xs);
+}
+
+/* Key Input Enhancements */
+.key-input-container {
+    position: relative;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.key-input-container .cyber-input {
+    flex: 1;
+}
+
+.key-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.key-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.key-strength {
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.key-strength.strength-excellent {
+    background: rgba(0, 255, 136, 0.2);
+    color: var(--success);
+}
+
+.key-strength.strength-good {
+    background: rgba(0, 212, 255, 0.2);
+    color: var(--cyber-blue);
+}
+
+.key-strength.strength-fair {
+    background: rgba(255, 170, 0, 0.2);
+    color: var(--warning);
+}
+
+.key-strength.strength-weak {
+    background: rgba(255, 51, 102, 0.2);
+    color: var(--error);
+}
+
+.key-algorithm {
+    color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.auto-generate-notice {
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--cyber-blue);
+    animation: pulse 2s infinite;
+}
+
+.btn-info.active {
+    background: var(--cyber-blue);
+    color: white;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+}
+
+.key-notification {
+    position: absolute;
+    top: -2.5rem;
+    right: 0;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 100;
+    animation: slideDown 0.3s ease;
+}
+
+.key-notification.success {
+    border-left: 3px solid var(--success);
+}
+
+.key-notification.warning {
+    border-left: 3px solid var(--warning);
+}
+
+.key-notification.info {
+    border-left: 3px solid var(--cyber-blue);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+</style>
+
+<script>
+// Real-time key generation variables
+let autoGenerateInterval = null;
+let isAutoGenerating = false;
+
+// Tab functionality
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const tab = this.getAttribute('data-tab');
+        
+        // Update active tab button
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Update active tab pane
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        document.getElementById(tab + '-tab').classList.add('active');
+        
+        // Clear the other input but don't clear the current tab's input
+        if (tab === 'text') {
+            // Only clear file if switching TO text tab
+            const fileInput = document.getElementById('file');
+            if (fileInput) {
+                fileInput.value = '';
+                // Hide file preview
+                const filePreview = document.getElementById('filePreview');
+                if (filePreview) {
+                    filePreview.style.display = 'none';
+                }
+                // Remove file-selected class
+                const uploadArea = document.querySelector('.file-upload-area');
+                if (uploadArea) {
+                    uploadArea.classList.remove('file-selected');
+                }
+            }
+        } else if (tab === 'file') {
+            // Only clear text if switching TO file tab
+            const textArea = document.querySelector('textarea[name="text_content"]');
+            if (textArea) {
+                textArea.value = '';
+            }
+        }
+    });
+});
+
+// Algorithm info display and key algorithm update
+document.querySelector('select[name="algorithm"]').addEventListener('change', function() {
+    const algorithm = this.value;
+    document.querySelectorAll('.info-item').forEach(item => {
+        item.style.display = item.getAttribute('data-algorithm') === algorithm ? 'flex' : 'none';
+    });
+    document.querySelector('.algorithm-info').classList.add('active');
+    
+    // Update key algorithm display
+    document.getElementById('keyAlgorithm').textContent = algorithm + ' Compatible';
+    
+    // If auto-generating, update key immediately for new algorithm
+    if (isAutoGenerating) {
+        generateKey();
+    }
+});
+
+// Generate random key using backend API
+function generateKey() {
+    const algorithm = document.querySelector('select[name="algorithm"]').value;
+    
+    // Show loading state
+    const generateBtn = document.querySelector('.btn-secondary');
+    const originalText = generateBtn.innerHTML;
+    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    generateBtn.disabled = true;
+    
+    fetch(`/generate_security_key?algorithm=${algorithm}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                document.getElementById('encryptionKey').value = data.key;
+                updateKeyStrength(data.key);
+                showKeyNotification('New key generated!', 'success');
+            } else {
+                throw new Error('API returned unsuccessful response');
+            }
+        })
+        .catch(error => {
+            console.log('API failed, using fallback:', error);
+            fallbackKeyGeneration(algorithm);
+            showKeyNotification('Key generated using secure fallback method', 'info');
+        })
+        .finally(() => {
+            // Restore button state
+            generateBtn.innerHTML = originalText;
+            generateBtn.disabled = false;
+        });
+}
+
+// Improved fallback key generation
+function fallbackKeyGeneration(algorithm) {
+    let key = '';
+    
+    if (algorithm === 'AES' || algorithm === 'Fernet') {
+        // Generate 32-character base64-safe key for AES/Fernet
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+        for (let i = 0; i < 32; i++) {
+            key += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+    } else if (algorithm === 'RSA') {
+        // For RSA, generate a passphrase
+        const words = ['quantum', 'cipher', 'secure', 'crypto', 'shield', 'vault', 'guard', 'lock'];
+        const numbers = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        key = words[Math.floor(Math.random() * words.length)] + numbers + 
+              words[Math.floor(Math.random() * words.length)];
+    }
+    
+    document.getElementById('encryptionKey').value = key;
+    updateKeyStrength(key);
+}
+
+// Toggle auto-generation mode
+function toggleAutoGenerate() {
+    isAutoGenerating = !isAutoGenerating;
+    
+    if (isAutoGenerating) {
+        // Start auto-generation
+        generateKey(); // Generate immediately
+        autoGenerateInterval = setInterval(generateKey, 5000); // Every 5 seconds
+        
+        // Update UI
+        document.getElementById('autoIcon').className = 'fas fa-pause';
+        document.getElementById('autoText').textContent = 'Stop';
+        document.getElementById('autoNotice').style.display = 'block';
+        document.querySelector('.btn-info').classList.add('active');
+        
+        showKeyNotification('Auto-generation started! Key will update every 5 seconds.', 'info');
+    } else {
+        // Stop auto-generation
+        if (autoGenerateInterval) {
+            clearInterval(autoGenerateInterval);
+            autoGenerateInterval = null;
+        }
+        
+        // Update UI
+        document.getElementById('autoIcon').className = 'fas fa-sync';
+        document.getElementById('autoText').textContent = 'Auto';
+        document.getElementById('autoNotice').style.display = 'none';
+        document.querySelector('.btn-info').classList.remove('active');
+        
+        showKeyNotification('Auto-generation stopped.', 'info');
+    }
+}
+
+// Copy key to clipboard
+function copyKey() {
+    const keyField = document.getElementById('encryptionKey');
+    if (keyField.value) {
+        keyField.select();
+        document.execCommand('copy');
+        showKeyNotification('Key copied to clipboard!', 'success');
+    } else {
+        showKeyNotification('No key to copy. Generate a key first.', 'warning');
+    }
+}
+
+// Update key strength indicator
+function updateKeyStrength(key) {
+    const strengthElement = document.getElementById('keyStrength');
+    
+    if (!key) {
+        strengthElement.textContent = '';
+        return;
+    }
+    
+    let strength = 0;
+    let strengthText = '';
+    let strengthClass = '';
+    
+    if (key === 'RSA_AUTO_GENERATED') {
+        strengthText = 'RSA Generated';
+        strengthClass = 'strength-excellent';
+    } else {
+        // Calculate strength based on length and character variety
+        if (key.length >= 32) strength += 2;
+        else if (key.length >= 24) strength += 1;
+        
+        if (/[a-z]/.test(key)) strength += 1;
+        if (/[A-Z]/.test(key)) strength += 1;
+        if (/[0-9]/.test(key)) strength += 1;
+        if (/[^a-zA-Z0-9]/.test(key)) strength += 1;
+        
+        if (strength >= 5) {
+            strengthText = 'Excellent';
+            strengthClass = 'strength-excellent';
+        } else if (strength >= 4) {
+            strengthText = 'Good';
+            strengthClass = 'strength-good';
+        } else if (strength >= 3) {
+            strengthText = 'Fair';
+            strengthClass = 'strength-fair';
+        } else {
+            strengthText = 'Weak';
+            strengthClass = 'strength-weak';
+        }
+    }
+    
+    strengthElement.textContent = strengthText;
+    strengthElement.className = `key-strength ${strengthClass}`;
+}
+
+// Show key notification
+function showKeyNotification(message, type) {
+    // Remove existing notifications
+    document.querySelectorAll('.key-notification').forEach(n => n.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `key-notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.querySelector('.key-input-container').appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Monitor key input for strength updates
+document.getElementById('encryptionKey').addEventListener('input', function() {
+    updateKeyStrength(this.value);
+});
+
+// Initialize key strength display
+document.addEventListener('DOMContentLoaded', function() {
+    updateKeyStrength(document.getElementById('encryptionKey').value);
+    
+    // Initialize drag and drop functionality
+    initializeDragAndDrop();
+});
+
+function triggerFileInput() {
+    console.log('Triggering file input click');
+    const fileInput = document.getElementById('file');
+    if (fileInput) {
+        fileInput.click();
+    } else {
+        console.error('File input not found');
+    }
+}
+
+function initializeDragAndDrop() {
+    const uploadArea = document.querySelector('.file-upload-area');
+    if (!uploadArea) {
+        console.error('Upload area not found');
+        return;
+    }
+    
+    console.log('Initializing drag and drop');
+    
+    // Drag and drop functionality
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        uploadArea.classList.add('dragover');
+    }
+
+    function unhighlight() {
+        uploadArea.classList.remove('dragover');
+    }
+
+    uploadArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        console.log('File(s) dropped');
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            console.log('Processing dropped file:', files[0].name);
+            const fileInput = document.getElementById('file');
+            if (fileInput) {
+                fileInput.files = files;
+                handleFileSelection(files[0]);
+            }
+        }
+    }
+}
+document.getElementById('file').addEventListener('change', function(e) {
+    console.log('File input changed', e.target.files);
+    const file = e.target.files[0];
+    if (file) {
+        console.log('File selected:', file.name, file.size, file.type);
+        handleFileSelection(file);
+    } else {
+        console.log('No file selected');
+        // Hide preview if no file
+        const filePreview = document.getElementById('filePreview');
+        if (filePreview) {
+            filePreview.style.display = 'none';
+        }
+        const uploadArea = document.querySelector('.file-upload-area');
+        if (uploadArea) {
+            uploadArea.classList.remove('file-selected');
+        }
+    }
+});
+
+function handleFileSelection(file) {
+    if (file) {
+        console.log('Handling file selection:', file.name);
+        
+        // Validate file size
+        const maxSize = 50 * 1024 * 1024; // 50MB
+        if (file.size > maxSize) {
+            alert('File too large. Maximum size is 50MB.');
+            document.getElementById('file').value = ''; // Clear the input
+            return;
+        }
+        
+        // Validate file type
+        const allowedExtensions = [
+            'txt', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+            'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg',
+            'zip', 'rar', '7z', 'tar', 'gz',
+            'mp3', 'wav', 'mp4', 'avi', 'mkv', 'mov',
+            'json', 'xml', 'csv', 'log', 'md', 'py', 'js', 'css', 'html'
+        ];
+        
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        if (!allowedExtensions.includes(fileExtension)) {
+            alert(`File type .${fileExtension} is not supported. Please choose a file with one of these extensions: ${allowedExtensions.join(', ')}`);
+            document.getElementById('file').value = ''; // Clear the input
+            return;
+        }
+        
+        // Show file preview
+        const filePreview = document.getElementById('filePreview');
+        const fileName = filePreview.querySelector('.file-name');
+        const fileSize = filePreview.querySelector('.file-size');
+        
+        if (fileName && fileSize) {
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            filePreview.style.display = 'block';
+            
+            // Update upload area
+            const uploadArea = document.querySelector('.file-upload-area');
+            if (uploadArea) {
+                uploadArea.classList.add('file-selected');
+            }
+            
+            // Switch to file tab if not already active
+            const fileTab = document.querySelector('.tab-btn[data-tab="file"]');
+            if (fileTab && !fileTab.classList.contains('active')) {
+                fileTab.click();
+            }
+            
+            console.log('File preview updated successfully');
+        } else {
+            console.error('Could not find file preview elements');
+        }
+    }
+}
+
+function removeFile() {
+    console.log('Removing file');
+    const fileInput = document.getElementById('file');
+    const filePreview = document.getElementById('filePreview');
+    const uploadArea = document.querySelector('.file-upload-area');
+    
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    if (filePreview) {
+        filePreview.style.display = 'none';
+    }
+    if (uploadArea) {
+        uploadArea.classList.remove('file-selected');
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// File upload handling
+document.getElementById('file').addEventListener('change', function(e) {
+    console.log('File input changed', e.target.files);
+    const file = e.target.files[0];
+    if (file) {
+        console.log('File selected:', file.name, file.size, file.type);
+        handleFileSelection(file);
+    } else {
+        console.log('No file selected');
+        // Hide preview if no file
+        const filePreview = document.getElementById('filePreview');
+        if (filePreview) {
+            filePreview.style.display = 'none';
+        }
+        const uploadArea = document.querySelector('.file-upload-area');
+        if (uploadArea) {
+            uploadArea.classList.remove('file-selected');
+        }
+    }
+});
+
+// Form validation before submit
+document.querySelector('form').addEventListener('submit', function(e) {
+    const textContent = document.querySelector('textarea[name="text_content"]').value.trim();
+    const fileInput = document.getElementById('file');
+    const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+    
+    console.log('Form submit - Text:', !!textContent, 'File:', hasFile);
+    
+    if (!textContent && !hasFile) {
+        e.preventDefault();
+        alert('Please provide either text content or upload a file to encrypt.');
+        return false;
+    }
+    
+    if (textContent && hasFile) {
+        e.preventDefault();
+        alert('Please provide either text content OR a file, not both.');
+        return false;
+    }
+    
+    // Show loading state
+    const submitBtn = document.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Encrypting...';
+        submitBtn.disabled = true;
+    }
+    
+    return true;
+});
+
+// Initialize algorithm info
+document.querySelector('select[name="algorithm"]').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

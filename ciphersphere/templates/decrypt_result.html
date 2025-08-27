@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 text-white p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="cyber-card p-8">
+            <h2 class="text-3xl font-bold mb-6 text-center text-cyan-400">Decryption Complete</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Decryption Details -->
+                <div class="space-y-6">
+                    <div class="bg-gray-800 p-6 rounded-lg border border-cyan-500/30">
+                        <h3 class="text-xl font-semibold mb-4 text-cyan-300">Decryption Details</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-300">Algorithm:</span>
+                                <span class="text-cyan-400 font-mono">{{ algorithm.upper() }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-300">Status:</span>
+                                <span class="text-green-400 flex items-center">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    Success
+                                </span>
+                            </div>
+                            {% if not is_text and filename %}
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-300">Original File:</span>
+                                <span class="text-cyan-400 font-mono">{{ filename }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-300">Timestamp:</span>
+                                <span class="text-gray-400">{{ moment().format('YYYY-MM-DD HH:mm:ss') }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Notice -->
+                    <div class="bg-amber-900/20 border border-amber-500/30 p-4 rounded-lg">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-amber-400 mt-1 mr-3"></i>
+                            <div>
+                                <h4 class="text-amber-300 font-semibold mb-2">Security Notice</h4>
+                                <p class="text-amber-200 text-sm">
+                                    Decrypted content is temporarily displayed. For security, clear your browser cache after viewing.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Display -->
+                <div class="space-y-6">
+                    {% if is_text %}
+                    <!-- Text Result -->
+                    <div class="bg-gray-800 p-6 rounded-lg border border-cyan-500/30">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-cyan-300">Decrypted Text</h3>
+                            <button onclick="copyDecryptedText()" class="action-btn bg-cyan-600 hover:bg-cyan-700">
+                                <i class="fas fa-copy mr-2"></i>Copy
+                            </button>
+                        </div>
+                        <div class="bg-gray-900 p-4 rounded border border-gray-700 max-h-96 overflow-y-auto">
+                            <pre id="decryptedText" class="text-gray-200 whitespace-pre-wrap break-words">{{ result.data.decode('utf-8') if result.data else 'No content to display' }}</pre>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- File Result -->
+                    <div class="bg-gray-800 p-6 rounded-lg border border-cyan-500/30">
+                        <h3 class="text-xl font-semibold mb-4 text-cyan-300">Decrypted File</h3>
+                        <div class="text-center py-8">
+                            <i class="fas fa-file-alt text-6xl text-cyan-400 mb-4"></i>
+                            <p class="text-gray-300 mb-6">File successfully decrypted!</p>
+                            <a href="data:application/octet-stream;base64,{{ result.data | b64encode }}" 
+                               download="{{ filename.replace('encrypted_', '') if filename else 'decrypted_file' }}"
+                               class="action-btn bg-green-600 hover:bg-green-700">
+                                <i class="fas fa-download mr-2"></i>Download Decrypted File
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-8 flex flex-wrap gap-4 justify-center">
+                <a href="{{ url_for('decrypt') }}" class="action-btn bg-blue-600 hover:bg-blue-700">
+                    <i class="fas fa-lock-open mr-2"></i>Decrypt Another
+                </a>
+                <a href="{{ url_for('encrypt') }}" class="action-btn bg-purple-600 hover:bg-purple-700">
+                    <i class="fas fa-lock mr-2"></i>Encrypt Data
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="action-btn bg-gray-600 hover:bg-gray-700">
+                    <i class="fas fa-home mr-2"></i>Dashboard
+                </a>
+                <button onclick="clearSensitiveData()" class="action-btn bg-red-600 hover:bg-red-700">
+                    <i class="fas fa-trash mr-2"></i>Clear Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Toast -->
+<div id="successToast" class="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300">
+    <div class="flex items-center">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span id="toastMessage">Copied to clipboard!</span>
+    </div>
+</div>
+
+<script>
+function copyDecryptedText() {
+    const textElement = document.getElementById('decryptedText');
+    const text = textElement.textContent;
+    
+    navigator.clipboard.writeText(text).then(function() {
+        showToast('Decrypted text copied to clipboard!');
+    }).catch(function() {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Decrypted text copied to clipboard!');
+    });
+}
+
+function clearSensitiveData() {
+    if (confirm('Are you sure you want to clear all sensitive data from this page?')) {
+        // Clear text content
+        const textElement = document.getElementById('decryptedText');
+        if (textElement) {
+            textElement.textContent = '[Data Cleared for Security]';
+        }
+        
+        // Clear any download links
+        const downloadLinks = document.querySelectorAll('a[download]');
+        downloadLinks.forEach(link => {
+            link.href = '#';
+            link.onclick = function(e) {
+                e.preventDefault();
+                alert('Data has been cleared for security.');
+            };
+        });
+        
+        showToast('Sensitive data cleared!');
+    }
+}
+
+function showToast(message) {
+    const toast = document.getElementById('successToast');
+    const messageElement = document.getElementById('toastMessage');
+    
+    messageElement.textContent = message;
+    toast.classList.remove('translate-x-full');
+    
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+    }, 3000);
+}
+
+// Auto-clear sensitive data after 5 minutes for security
+setTimeout(() => {
+    if (confirm('For security purposes, would you like to clear sensitive data from this page?')) {
+        clearSensitiveData();
+    }
+}, 300000); // 5 minutes
+</script>
+{% endblock %}
