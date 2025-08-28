@@ -1,12 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, session, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
 import secrets
 from datetime import datetime, timedelta
 import json
+import tempfile
 from ciphersphere.encryption import EncryptionManager
 from ciphersphere.models import db, User, EncryptedFile, ActivityLog, SharedFile
 from ciphersphere.forms import LoginForm, RegisterForm, EncryptForm, ChangePasswordForm, SecurityQuestionForm
@@ -35,12 +37,30 @@ app.config['UPLOAD_FOLDER'] = 'ciphersphere/uploads'
 app.config['VAULT_FOLDER'] = 'ciphersphere/vault'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 
+# Enable debug logging
+import logging
+logging.basicConfig(level=logging.INFO)
+app.logger.setLevel(logging.INFO)
+
+# Custom Jinja2 filters
+@app.template_filter('b64encode')
+def b64encode_filter(data):
+    """Base64 encode filter for Jinja2 templates"""
+    if isinstance(data, str):
+        data = data.encode('utf-8')
+    elif isinstance(data, bytes):
+        pass
+    else:
+        data = str(data).encode('utf-8')
+    return base64.b64encode(data).decode('utf-8')
+
 # Ensure upload and vault directories exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['VAULT_FOLDER'], exist_ok=True)
 
 # Initialize extensions
 db.init_app(app)
+# csrf = CSRFProtect(app)  # Temporarily disabled for testing
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -232,6 +252,13 @@ def encrypt():
                                             f"{encrypted_file.id}_{encrypted_file.filename}")
                     with open(vault_path, 'wb') as f:
                         f.write(result['data'])
+                    
+                    # Include file_id in result for template
+                    result['file_id'] = encrypted_file.id
+                    result['saved_to_vault'] = True
+                else:
+                    result['file_id'] = None
+                    result['saved_to_vault'] = False
                 
                 log_activity(current_user.id, f'Text encrypted using {algorithm}')
                 
@@ -284,6 +311,13 @@ def encrypt():
                         vault_path = os.path.join(app.config['VAULT_FOLDER'], 
                                                 f"{encrypted_file.id}_{encrypted_file.filename}")
                         os.rename(result['file_path'], vault_path)
+                        
+                        # Include file_id in result for template
+                        result['file_id'] = encrypted_file.id
+                        result['saved_to_vault'] = True
+                    else:
+                        result['file_id'] = None
+                        result['saved_to_vault'] = False
                     
                     log_activity(current_user.id, f'File {filename} encrypted using {algorithm}')
                     
@@ -304,17 +338,272 @@ def encrypt():
     
     return render_template('encrypt.html', form=form)
 
-@app.route('/decrypt', methods=['GET', 'POST'])
+@app.route('/decrypt_simple', methods=['GET', 'POST'])
 @login_required
-def decrypt():
-    form = EncryptForm()
+def decrypt_simple():
+    from ciphersphere.forms import DecryptForm
+    form = DecryptForm()
+    
+    if request.method == 'POST':
+        app.logger.info(f"Simple decrypt - Form valid: {form.validate_on_submit()}")
+        app.logger.info(f"Simple decrypt - Form data: {request.form}")
+        app.logger.info(f"Simple decrypt - Files: {request.files}")
+        app.logger.info(f"Simple decrypt - Content type: {request.content_type}")
+        app.logger.info(f"Simple decrypt - Form file data: {form.file.data}")
+        app.logger.info(f"Simple decrypt - Form file filename: {form.file.data.filename if form.file.data else 'None'}")
+        
+        if form.validate_on_submit():
+            try:
+                algorithm = form.algorithm.data
+                key = form.key.data
+                
+                app.logger.info(f"Form validated. Algorithm: {algorithm}, Key provided: {bool(key)}")
+                
+                if not key:
+                    flash('Decryption key is required.', 'error')
+                    return render_template('decrypt_simple.html', form=form)
+                
+                # Check if either text or file is provided
+                has_text = form.text_content.data and form.text_content.data.strip()
+                has_file = form.file.data and form.file.data.filename
+                
+                app.logger.info(f"Has text: {has_text}, Has file: {has_file}")
+                
+                if not has_text and not has_file:
+                    flash('Please provide either text content or upload a file to decrypt.', 'error')
+                    return render_template('decrypt_simple.html', form=form)
+                
+                if has_text and has_file:
+                    flash('Please provide either text content OR a file, not both.', 'error')
+                    return render_template('decrypt_simple.html', form=form)
+                
+                if has_text:
+                    app.logger.info("Processing text content decryption")
+                    try:
+                        # Decrypt text
+                        result = encryption_manager.decrypt_text(
+                            form.text_content.data, key, algorithm
+                        )
+                        
+                        app.logger.info(f"Text decryption successful")
+                        
+                        from datetime import datetime
+                        
+                        return render_template('decrypt_result.html', 
+                                             decrypted_text=result['data'],
+                                             algorithm=algorithm,
+                                             is_text=True,
+                                             timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                    except Exception as text_error:
+                        app.logger.error(f"Text decryption error: {str(text_error)}")
+                        flash(f'Decryption failed: {str(text_error)}', 'error')
+                        return render_template('decrypt_simple.html', form=form)
+                
+                elif has_file:
+                    app.logger.info("Processing file decryption")
+                    try:
+                        file = form.file.data
+                        
+                        # Read the file content
+                        file_content = file.read()
+                        app.logger.info(f"Read {len(file_content)} bytes from uploaded file")
+                        
+                        # Decrypt the file
+                        result = encryption_manager.decrypt_data_with_metadata(
+                            file_content, key, algorithm
+                        )
+                        
+                        # Determine the original filename
+                        if result['has_metadata'] and result['metadata']:
+                            original_filename = result['metadata']['original_filename']
+                        else:
+                            # Use the uploaded filename without the .encrypted extension if present
+                            original_filename = file.filename.replace('.encrypted', '') if file.filename.endswith('.encrypted') else file.filename
+                        
+                        # Save decrypted file temporarily
+                        temp_filename = f"decrypted_{original_filename}"
+                        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], 'temp', temp_filename)
+                        
+                        # Ensure temp directory exists
+                        os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+                        
+                        with open(temp_path, 'wb') as temp_file:
+                            temp_file.write(result['data'])
+                        
+                        app.logger.info(f"Saved decrypted file to {temp_path}")
+                        
+                        log_activity(current_user.id, f'File {file.filename} decrypted using {algorithm}')
+                        
+                        from datetime import datetime
+                        
+                        return render_template('decrypt_result.html',
+                                             decrypted_file=temp_filename,
+                                             original_filename=original_filename,
+                                             algorithm=algorithm,
+                                             file_size=len(result['data']),
+                                             is_text=False,
+                                             filename=original_filename,
+                                             timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                                             
+                    except Exception as file_error:
+                        app.logger.error(f"File decryption error: {str(file_error)}")
+                        flash(f'Decryption failed: {str(file_error)}', 'error')
+                        return render_template('decrypt_simple.html', form=form)
+                        
+            except Exception as e:
+                app.logger.error(f"Decryption error: {str(e)}")
+                flash(f'An error occurred during decryption: {str(e)}', 'error')
+        else:
+            app.logger.error(f"Form validation errors: {form.errors}")
+    
+    return render_template('decrypt_simple.html', form=form)
+
+@app.route('/decrypt_new', methods=['GET', 'POST'])
+@login_required
+def decrypt_new():
+    from ciphersphere.forms import DecryptForm
+    form = DecryptForm()
+    
+    if request.method == 'POST':
+        app.logger.info(f"New decrypt form submitted. Valid: {form.validate_on_submit()}")
+        app.logger.info(f"Form data: {request.form}")
+        app.logger.info(f"Files: {request.files}")
+        app.logger.info(f"Content type: {request.content_type}")
+        if form.errors:
+            app.logger.error(f"Form validation errors: {form.errors}")
     
     if form.validate_on_submit():
         try:
             algorithm = form.algorithm.data
             key = form.key.data
             
-            if form.text_content.data:
+            app.logger.info(f"Form validated. Algorithm: {algorithm}, Key provided: {bool(key)}")
+            app.logger.info(f"Text content: '{form.text_content.data}'")
+            app.logger.info(f"File data: {form.file.data}")
+            app.logger.info(f"File filename: {form.file.data.filename if form.file.data else 'None'}")
+            
+            if not key:
+                flash('Decryption key is required.', 'error')
+                return render_template('decrypt_new.html', form=form)
+            
+            # Check if either text or file is provided
+            has_text = form.text_content.data and form.text_content.data.strip()
+            has_file = form.file.data and form.file.data.filename
+            
+            app.logger.info(f"Has text: {has_text}, Has file: {has_file}")
+            
+            if not has_text and not has_file:
+                flash('Please provide either text content or upload a file to decrypt.', 'error')
+                return render_template('decrypt_new.html', form=form)
+            
+            if has_text and has_file:
+                flash('Please provide either text content OR a file, not both.', 'error')
+                return render_template('decrypt_new.html', form=form)
+            
+            if has_text:
+                app.logger.info("Processing text content decryption")
+                # Decrypt text
+                result = encryption_manager.decrypt_text(
+                    form.text_content.data, key, algorithm
+                )
+                
+                if result['success']:
+                    return render_template('decrypt_result.html', 
+                                         decrypted_text=result['data'],
+                                         algorithm=algorithm)
+                else:
+                    flash(f'Decryption failed: {result["error"]}', 'error')
+                    return render_template('decrypt_new.html', form=form)
+            
+            elif has_file:
+                app.logger.info("Processing file decryption")
+                file = form.file.data
+                
+                # Read the file content
+                file_content = file.read()
+                app.logger.info(f"Read {len(file_content)} bytes from uploaded file")
+                
+                # Decrypt the file
+                result = encryption_manager.decrypt_data_with_metadata(
+                    file_content, key, algorithm
+                )
+                
+                # Determine the original filename
+                if result['has_metadata'] and result['metadata']:
+                    original_filename = result['metadata']['original_filename']
+                else:
+                    # Use the uploaded filename without the .encrypted extension if present
+                    original_filename = file.filename.replace('.encrypted', '') if file.filename.endswith('.encrypted') else file.filename
+                
+                # Save decrypted file temporarily
+                temp_filename = f"decrypted_{original_filename}"
+                temp_path = os.path.join(app.config['UPLOAD_FOLDER'], 'temp', temp_filename)
+                
+                # Ensure temp directory exists
+                os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+                
+                with open(temp_path, 'wb') as temp_file:
+                    temp_file.write(result['data'])
+                
+                app.logger.info(f"Saved decrypted file to {temp_path}")
+                
+                return render_template('decrypt_result.html',
+                                     decrypted_file=temp_filename,
+                                     original_filename=original_filename,
+                                     algorithm=algorithm,
+                                     file_size=len(result['data']))
+                    
+        except Exception as e:
+            app.logger.error(f"Encryption error: {str(e)}")
+            flash(f'An error occurred during decryption: {str(e)}', 'error')
+    
+    return render_template('decrypt_new.html', form=form)
+
+@app.route('/decrypt', methods=['GET', 'POST'])
+@login_required
+def decrypt():
+    # Import the correct form
+    from ciphersphere.forms import DecryptForm
+    form = DecryptForm()
+    
+    if request.method == 'POST':
+        app.logger.info(f"Decrypt form submitted. Valid: {form.validate_on_submit()}")
+        app.logger.info(f"Request form data: {request.form}")
+        app.logger.info(f"Request files: {request.files}")
+        app.logger.info(f"Request method: {request.method}")
+        app.logger.info(f"Content type: {request.content_type}")
+        if form.errors:
+            app.logger.error(f"Form validation errors: {form.errors}")
+    
+    if form.validate_on_submit():
+        try:
+            algorithm = form.algorithm.data
+            key = form.key.data
+            
+            app.logger.info(f"Form validated. Algorithm: {algorithm}, Key provided: {bool(key)}")
+            app.logger.info(f"Text content: '{form.text_content.data}'")
+            app.logger.info(f"File data: {form.file.data}")
+            app.logger.info(f"File filename: {form.file.data.filename if form.file.data else 'None'}")
+            app.logger.info(f"Request files: {request.files}")
+            
+            if not key:
+                flash('Decryption key is required.', 'error')
+                return render_template('decrypt.html', form=form)
+            
+            # Check if either text or file is provided
+            has_text = form.text_content.data and form.text_content.data.strip()
+            has_file = form.file.data and form.file.data.filename
+            
+            if not has_text and not has_file:
+                flash('Please provide either text content or upload a file to decrypt.', 'error')
+                return render_template('decrypt.html', form=form)
+            
+            if has_text and has_file:
+                flash('Please provide either text content OR a file, not both.', 'error')
+                return render_template('decrypt.html', form=form)
+            
+            if has_text:
+                app.logger.info("Processing text content decryption")
                 # Decrypt text
                 result = encryption_manager.decrypt_text(
                     form.text_content.data, key, algorithm
@@ -327,17 +616,66 @@ def decrypt():
                                      algorithm=algorithm,
                                      is_text=True)
             
-            elif form.file.data:
+            elif has_file:
+                app.logger.info("Processing file decryption")
                 # Decrypt file
                 file = form.file.data
                 filename = secure_filename(file.filename)
+                
+                app.logger.info(f"Starting decryption for file: {filename}")
+                app.logger.info(f"Algorithm: {algorithm}, Key provided: {bool(key)}")
+                
+                # Check if the file appears to be encrypted
+                if not filename.endswith('.encrypted') and not any(word in filename.lower() for word in ['encrypted', 'cipher', 'crypt']):
+                    flash('Warning: The uploaded file does not appear to be encrypted (missing .encrypted extension). Proceeding anyway...', 'warning')
                 
                 # Save uploaded file temporarily
                 temp_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(temp_path)
                 
                 try:
-                    result = encryption_manager.decrypt_file(temp_path, key, algorithm)
+                    # Check file size
+                    file_size = os.path.getsize(temp_path)
+                    app.logger.info(f"Uploaded file size: {file_size} bytes")
+                    
+                    if file_size == 0:
+                        flash('Uploaded file is empty.', 'error')
+                        return render_template('decrypt.html', form=form)
+                    
+                    # Read and decrypt the file data with metadata
+                    with open(temp_path, 'rb') as f:
+                        encrypted_data = f.read()
+                    
+                    app.logger.info(f"Read {len(encrypted_data)} bytes of encrypted data")
+                    
+                    # Decrypt the data with metadata extraction
+                    decrypt_result = encryption_manager.decrypt_data_with_metadata(encrypted_data, key, algorithm)
+                    
+                    app.logger.info(f"Decryption successful. Has metadata: {decrypt_result['has_metadata']}")
+                    
+                    # Prepare result for template
+                    original_filename = filename
+                    if decrypt_result['has_metadata'] and decrypt_result['metadata']:
+                        original_filename = decrypt_result['metadata']['original_filename']
+                        app.logger.info(f"Original filename from metadata: {original_filename}")
+                        # Remove .encrypted extension if present
+                        if original_filename.endswith('.encrypted'):
+                            original_filename = original_filename[:-10]
+                    else:
+                        # Remove .encrypted extension from uploaded filename
+                        if filename.endswith('.encrypted'):
+                            original_filename = filename[:-10]
+                        app.logger.info(f"No metadata found, using filename: {original_filename}")
+                    
+                    result = {
+                        'data': decrypt_result['data'],
+                        'key': key,
+                        'algorithm': algorithm,
+                        'decrypted_size': len(decrypt_result['data']),
+                        'original_filename': original_filename
+                    }
+                    
+                    app.logger.info(f"Prepared result with {len(decrypt_result['data'])} bytes of decrypted data")
                     
                     log_activity(current_user.id, f'File {filename} decrypted using {algorithm}')
                     
@@ -345,7 +683,7 @@ def decrypt():
                                          result=result, 
                                          algorithm=algorithm,
                                          is_text=False,
-                                         filename=filename)
+                                         filename=original_filename)
                 
                 finally:
                     # Clean up temporary file
@@ -353,9 +691,309 @@ def decrypt():
                         os.remove(temp_path)
         
         except Exception as e:
+            app.logger.error(f'Decryption failed: {str(e)}')
             flash(f'Decryption failed: {str(e)}', 'error')
+    else:
+        if request.method == 'POST':
+            app.logger.warning("Form validation failed - showing error messages to user")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    flash(f'{field}: {error}', 'error')
     
     return render_template('decrypt.html', form=form)
+
+@app.route('/download_decrypted', methods=['POST'])
+@login_required
+def download_decrypted():
+    """Handle downloading of decrypted files with original filename and format"""
+    try:
+        # Get the decrypted data from the form
+        decrypted_data = request.form.get('decrypted_data')
+        filename = request.form.get('filename', 'decrypted_file')
+        
+        if not decrypted_data:
+            return jsonify({'error': 'No decrypted data provided'}), 400
+        
+        # Decode the base64 data
+        file_data = base64.b64decode(decrypted_data)
+        
+        # Ensure filename doesn't have .encrypted extension
+        if filename.endswith('.encrypted'):
+            filename = filename[:-10]
+        
+        # Create a temporary file for download
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f'_{filename}') as temp_file:
+            temp_file.write(file_data)
+            temp_file_path = temp_file.name
+        
+        try:
+            return send_file(
+                temp_file_path,
+                as_attachment=True,
+                download_name=filename,
+                mimetype='application/octet-stream'
+            )
+        finally:
+            # Clean up temp file after sending
+            try:
+                os.unlink(temp_file_path)
+            except:
+                pass
+    
+    except Exception as e:
+        app.logger.error(f'Download decrypted file error: {str(e)}')
+        return jsonify({'error': f'Download failed: {str(e)}'}), 500
+
+# Debug route to test download without authentication
+@app.route('/test_download', methods=['GET'])
+def test_download():
+    """Test route to check download functionality"""
+    temp_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'temp')
+    files = os.listdir(temp_dir) if os.path.exists(temp_dir) else []
+    return jsonify({
+        'temp_dir': temp_dir,
+        'files': files,
+        'upload_folder': app.config['UPLOAD_FOLDER']
+    })
+
+# Test download with a specific file
+@app.route('/test_download_file')
+@login_required
+def test_download_file():
+    """Test downloading the latest file"""
+    try:
+        temp_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'temp')
+        files = os.listdir(temp_dir) if os.path.exists(temp_dir) else []
+        
+        if files:
+            # Get the most recent file
+            file_paths = [os.path.join(temp_dir, f) for f in files]
+            latest_file = max(file_paths, key=os.path.getctime)
+            filename = os.path.basename(latest_file)
+            
+            app.logger.info(f"Test download: sending {latest_file}")
+            return send_file(
+                latest_file,
+                as_attachment=True,
+                download_name=filename.replace('decrypted_', ''),
+                mimetype='application/octet-stream'
+            )
+        else:
+            return jsonify({'error': 'No files available for testing'})
+    except Exception as e:
+        app.logger.error(f'Test download error: {e}')
+        return jsonify({'error': str(e)})
+
+@app.route('/download_decrypted_temp', methods=['POST'])
+@login_required
+def download_decrypted_temp():
+    """Handle downloading of temporary decrypted files"""
+    try:
+        app.logger.info("=== DOWNLOAD REQUEST START ===")
+        app.logger.info(f"Download request received from user {current_user.id}")
+        app.logger.info(f"Request method: {request.method}")
+        app.logger.info(f"Request endpoint: {request.endpoint}")
+        app.logger.info(f"Form data: {dict(request.form)}")
+        app.logger.info(f"Request headers: {dict(request.headers)}")
+        
+        # Get the temp filename from the form
+        temp_filename = request.form.get('temp_filename')
+        original_filename = request.form.get('filename', 'decrypted_file')
+        
+        app.logger.info(f"Temp filename: '{temp_filename}', Original filename: '{original_filename}'")
+        
+        if not temp_filename:
+            app.logger.error("No temp file specified in request")
+            flash('No temporary file specified for download.', 'error')
+            return redirect(url_for('dashboard'))
+        
+        # Construct the full path to the temp file
+        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], 'temp', temp_filename)
+        app.logger.info(f"Looking for temp file at: {temp_path}")
+        app.logger.info(f"File exists: {os.path.exists(temp_path)}")
+        
+        if not os.path.exists(temp_path):
+            app.logger.error(f"Temporary file not found at {temp_path}")
+            # List available files for debugging
+            temp_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'temp')
+            available_files = os.listdir(temp_dir) if os.path.exists(temp_dir) else []
+            app.logger.error(f"Available files in temp dir: {available_files}")
+            flash('Temporary file not found. Please try decrypting again.', 'error')
+            return redirect(url_for('dashboard'))
+        
+        try:
+            app.logger.info(f"Sending file {temp_path} as {original_filename}")
+            file_size = os.path.getsize(temp_path)
+            app.logger.info(f"File size: {file_size} bytes")
+            
+            response = send_file(
+                temp_path,
+                as_attachment=True,
+                download_name=original_filename,
+                mimetype='application/octet-stream'
+            )
+            app.logger.info("File sent successfully")
+            
+            # Schedule cleanup for later (don't delete immediately)
+            import threading
+            def delayed_cleanup():
+                import time
+                time.sleep(5)  # Wait 5 seconds before cleaning up
+                try:
+                    if os.path.exists(temp_path):
+                        os.unlink(temp_path)
+                        app.logger.info(f"Cleaned up temp file: {temp_path}")
+                except Exception as cleanup_error:
+                    app.logger.warning(f"Failed to cleanup temp file {temp_path}: {cleanup_error}")
+            
+            # Start cleanup in background
+            cleanup_thread = threading.Thread(target=delayed_cleanup)
+            cleanup_thread.daemon = True
+            cleanup_thread.start()
+            
+            return response
+        except Exception as send_error:
+            app.logger.error(f"Error sending file: {send_error}")
+            raise send_error
+    
+    except Exception as e:
+        app.logger.error(f'Download temp file error: {str(e)}')
+        app.logger.error(f'Error type: {type(e).__name__}')
+        import traceback
+        app.logger.error(f'Traceback: {traceback.format_exc()}')
+        flash(f'Download failed: {str(e)}', 'error')
+        return redirect(url_for('dashboard'))
+
+@app.route('/vault/decrypt/<int:file_id>', methods=['POST'])
+@login_required
+def decrypt_vault_file(file_id):
+    """Decrypt a file from the vault with provided key and restore original format"""
+    try:
+        file = EncryptedFile.query.filter_by(id=file_id, user_id=current_user.id).first()
+        if not file:
+            return jsonify({'error': 'File not found'}), 404
+        
+        key = request.json.get('key')
+        if not key:
+            return jsonify({'error': 'Decryption key required'}), 400
+        
+        # Find the encrypted file
+        file_path = os.path.join(app.config['VAULT_FOLDER'], f"{file.id}_{file.filename}")
+        if not os.path.exists(file_path):
+            file_path = os.path.join(app.config['VAULT_FOLDER'], file.filename)
+            if not os.path.exists(file_path):
+                return jsonify({'error': 'Encrypted file not found on disk'}), 404
+        
+        # Read and decrypt the file
+        with open(file_path, 'rb') as f:
+            encrypted_data = f.read()
+        
+        # Decrypt the data with metadata extraction
+        decrypt_result = encryption_manager.decrypt_data_with_metadata(encrypted_data, key, file.algorithm)
+        
+        # Determine original filename
+        original_filename = file.original_filename
+        if decrypt_result['has_metadata'] and decrypt_result['metadata']:
+            original_filename = decrypt_result['metadata']['original_filename']
+        
+        # Encode as base64 for transfer
+        decrypted_b64 = base64.b64encode(decrypt_result['data']).decode('utf-8')
+        
+        log_activity(current_user.id, f'Vault file decrypted: {original_filename}')
+        
+        return jsonify({
+            'success': True,
+            'decrypted_data': decrypted_b64,
+            'filename': original_filename,
+            'algorithm': file.algorithm,
+            'has_metadata': decrypt_result['has_metadata']
+        })
+        
+    except Exception as e:
+        app.logger.error(f'Vault decryption error for file {file_id}: {str(e)}')
+        return jsonify({'error': f'Decryption failed: {str(e)}'}), 500
+
+@app.route('/download_encrypted_file/<int:file_id>')
+@login_required
+def download_encrypted_file(file_id):
+    """Download encrypted file that was just created"""
+    try:
+        file = EncryptedFile.query.filter_by(id=file_id, user_id=current_user.id).first()
+        if not file:
+            app.logger.error(f"Encrypted file with ID {file_id} not found for user {current_user.id}")
+            flash('File not found.', 'error')
+            return redirect(url_for('encrypt'))
+        
+        # Find the encrypted file in vault
+        file_path = os.path.join(app.config['VAULT_FOLDER'], f"{file.id}_{file.filename}")
+        if not os.path.exists(file_path):
+            app.logger.error(f"Encrypted file not found on disk: {file_path}")
+            flash('Encrypted file not found on disk.', 'error')
+            return redirect(url_for('encrypt'))
+        
+        # Create download filename with .encrypted extension
+        download_filename = f"{file.original_filename}.encrypted"
+        
+        log_activity(current_user.id, f'Downloaded encrypted file: {download_filename}')
+        
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=download_filename,
+            mimetype='application/octet-stream'
+        )
+        
+    except Exception as e:
+        app.logger.error(f'Error downloading encrypted file {file_id}: {str(e)}')
+        flash(f'Download failed: {str(e)}', 'error')
+        return redirect(url_for('encrypt'))
+
+@app.route('/download_encrypted_temp', methods=['POST'])
+@login_required  
+def download_encrypted_temp():
+    """Download encrypted content that wasn't saved to vault"""
+    try:
+        encrypted_content = request.form.get('encrypted_content')
+        filename = request.form.get('filename', 'encrypted_file')
+        
+        if not encrypted_content:
+            return jsonify({'error': 'No encrypted content provided'}), 400
+            
+        # Create download filename with .encrypted extension
+        download_filename = f"{filename}.encrypted"
+        
+        # Create temporary file for download
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.encrypted') as temp_file:
+            # Handle base64 encoded content
+            try:
+                content_bytes = base64.b64decode(encrypted_content)
+            except Exception as decode_error:
+                app.logger.error(f'Base64 decode error: {decode_error}')
+                # If not base64, treat as raw bytes
+                content_bytes = encrypted_content.encode('utf-8')
+                
+            temp_file.write(content_bytes)
+            temp_file_path = temp_file.name
+        
+        try:
+            log_activity(current_user.id, f'Downloaded encrypted temp file: {download_filename}')
+            
+            return send_file(
+                temp_file_path,
+                as_attachment=True,
+                download_name=download_filename,
+                mimetype='application/octet-stream'
+            )
+        finally:
+            # Clean up temp file after sending
+            try:
+                os.unlink(temp_file_path)
+            except:
+                pass
+                
+    except Exception as e:
+        app.logger.error(f'Error downloading encrypted temp file: {str(e)}')
+        return jsonify({'error': f'Download failed: {str(e)}'}), 500
 
 @app.route('/vault')
 @login_required
@@ -367,27 +1005,52 @@ def vault():
 @app.route('/vault/download/<int:file_id>')
 @login_required
 def download_file(file_id):
-    file = EncryptedFile.query.filter_by(id=file_id, user_id=current_user.id).first()
-    if not file:
-        flash('File not found.', 'error')
-        return redirect(url_for('vault'))
-    
-    # Look for file in vault folder
-    file_path = os.path.join(app.config['VAULT_FOLDER'], f"{file.id}_{file.filename}")
-    if not os.path.exists(file_path):
-        # Fallback: try original filename in vault
-        file_path = os.path.join(app.config['VAULT_FOLDER'], file.filename)
-        if not os.path.exists(file_path):
-            # Last fallback: try upload folder
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            if not os.path.exists(file_path):
-                flash('File not found on disk.', 'error')
-                return redirect(url_for('vault'))
-    
-    # Log activity
-    log_activity(current_user.id, 'file_download', f'Downloaded file: {file.original_filename}')
-    
-    return send_file(file_path, as_attachment=True, download_name=file.original_filename)
+    try:
+        file = EncryptedFile.query.filter_by(id=file_id, user_id=current_user.id).first()
+        if not file:
+            app.logger.error(f"File with ID {file_id} not found in database for user {current_user.id}")
+            return jsonify({'error': 'File not found in database'}), 404
+        
+        # Look for file in vault folder with priority order
+        possible_paths = [
+            os.path.join(app.config['VAULT_FOLDER'], f"{file.id}_{file.filename}"),
+            os.path.join(app.config['VAULT_FOLDER'], file.filename),
+            os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        ]
+        
+        file_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                file_path = path
+                app.logger.info(f"Found file at: {path}")
+                break
+        
+        if not file_path:
+            app.logger.error(f"File not found on disk. Searched paths: {possible_paths}")
+            return jsonify({'error': 'File not found on disk', 'searched_paths': possible_paths}), 404
+        
+        # Check if file is readable
+        if not os.access(file_path, os.R_OK):
+            app.logger.error(f"File {file_path} exists but is not readable")
+            return jsonify({'error': 'File access denied'}), 403
+        
+        # Log activity
+        log_activity(current_user.id, 'file_download', f'Downloaded encrypted file: {file.original_filename}')
+        
+        # Create encrypted filename for download
+        encrypted_filename = f"{file.original_filename}.encrypted"
+        
+        # Return file with .encrypted extension to indicate it's encrypted
+        return send_file(
+            file_path, 
+            as_attachment=True, 
+            download_name=encrypted_filename,
+            mimetype='application/octet-stream'
+        )
+        
+    except Exception as e:
+        app.logger.error(f"Download error for file {file_id}: {str(e)}")
+        return jsonify({'error': f'Download failed: {str(e)}'}), 500
 
 @app.route('/vault/share/<int:file_id>', methods=['POST'])
 @login_required
@@ -1110,6 +1773,48 @@ def log_activity(user_id, action, description=None):
     )
     db.session.add(activity)
     db.session.commit()
+
+@app.route('/test_decrypt', methods=['GET', 'POST'])
+@login_required
+def test_decrypt():
+    from ciphersphere.forms import DecryptForm
+    form = DecryptForm()
+    
+    if request.method == 'POST':
+        app.logger.info(f"Test decrypt - Form valid: {form.validate_on_submit()}")
+        app.logger.info(f"Test decrypt - Form data: {request.form}")
+        app.logger.info(f"Test decrypt - Files: {request.files}")
+        app.logger.info(f"Test decrypt - Content type: {request.content_type}")
+        app.logger.info(f"Test decrypt - Form file data: {form.file.data}")
+        app.logger.info(f"Test decrypt - Form file filename: {form.file.data.filename if form.file.data else 'None'}")
+        
+        if form.validate_on_submit():
+            return "Form validation passed!"
+        else:
+            app.logger.error(f"Form validation errors: {form.errors}")
+            return f"Form validation failed: {form.errors}"
+    
+    return render_template('test_decrypt.html', form=form)
+
+@app.route('/test_upload', methods=['GET', 'POST'])
+def test_upload():
+    if request.method == 'GET':
+        with open('test_upload.html', 'r') as f:
+            return f.read()
+    
+    if request.method == 'POST':
+        app.logger.info(f"Test upload - Form data: {request.form}")
+        app.logger.info(f"Test upload - Files: {request.files}")
+        app.logger.info(f"Test upload - Content type: {request.content_type}")
+        
+        if 'test_file' in request.files:
+            file = request.files['test_file']
+            app.logger.info(f"Test upload - File name: {file.filename}")
+            app.logger.info(f"Test upload - File size: {len(file.read())} bytes")
+            file.seek(0)  # Reset file pointer
+            return f"File uploaded successfully: {file.filename}"
+        else:
+            return "No file found in request"
 
 if __name__ == '__main__':
     with app.app_context():

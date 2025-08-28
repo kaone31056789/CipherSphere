@@ -1,6 +1,7 @@
 import os
 import base64
 import secrets
+import json
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding, serialization, hashes
@@ -48,16 +49,35 @@ class EncryptionManager:
         }
     
     def encrypt_file(self, file_path, key, algorithm):
-        """Encrypt file using specified algorithm"""
+        """Encrypt file using specified algorithm with metadata preservation"""
         if algorithm not in self.algorithms:
             raise ValueError(f"Unsupported algorithm: {algorithm}")
+        
+        # Get original filename and extension
+        original_filename = os.path.basename(file_path)
         
         with open(file_path, 'rb') as f:
             file_data = f.read()
         
-        result = self.algorithms[algorithm]('encrypt', file_data, key)
+        # Create metadata header
+        metadata = {
+            'original_filename': original_filename,
+            'file_size': len(file_data),
+            'algorithm': algorithm
+        }
         
-        # Save encrypted file
+        # Convert metadata to JSON and encode
+        metadata_json = json.dumps(metadata).encode('utf-8')
+        metadata_length = len(metadata_json)
+        
+        # Create header: 4 bytes for metadata length + metadata + file data
+        header = metadata_length.to_bytes(4, 'big') + metadata_json
+        
+        # Encrypt the header + file data together
+        combined_data = header + file_data
+        result = self.algorithms[algorithm]('encrypt', combined_data, key)
+        
+        # Save encrypted file with .encrypted extension
         encrypted_file_path = file_path + '.encrypted'
         with open(encrypted_file_path, 'wb') as f:
             f.write(result['data'])
@@ -66,12 +86,13 @@ class EncryptionManager:
             'file_path': encrypted_file_path,
             'key': result.get('key', key),
             'algorithm': algorithm,
+            'original_filename': original_filename,
             'original_size': len(file_data),
             'encrypted_size': len(result['data'])
         }
     
     def decrypt_file(self, encrypted_file_path, key, algorithm):
-        """Decrypt file using specified algorithm"""
+        """Decrypt file using specified algorithm and restore original metadata"""
         if algorithm not in self.algorithms:
             raise ValueError(f"Unsupported algorithm: {algorithm}")
         
@@ -79,17 +100,40 @@ class EncryptionManager:
             encrypted_data = f.read()
         
         result = self.algorithms[algorithm]('decrypt', encrypted_data, key)
+        decrypted_data = result['data']
         
-        # Save decrypted file
+        try:
+            # Extract metadata
+            metadata_length = int.from_bytes(decrypted_data[:4], 'big')
+            metadata_json = decrypted_data[4:4+metadata_length]
+            metadata = json.loads(metadata_json.decode('utf-8'))
+            
+            # Extract original file data
+            original_file_data = decrypted_data[4+metadata_length:]
+            original_filename = metadata.get('original_filename', 'decrypted_file')
+            
+        except (json.JSONDecodeError, KeyError, ValueError):
+            # Fallback for files encrypted without metadata
+            original_file_data = decrypted_data
+            original_filename = os.path.basename(encrypted_file_path).replace('.encrypted', '')
+            metadata = {
+                'original_filename': original_filename,
+                'file_size': len(original_file_data),
+                'algorithm': algorithm
+            }
+        
+        # Save decrypted file with original name
         decrypted_file_path = encrypted_file_path.replace('.encrypted', '.decrypted')
         with open(decrypted_file_path, 'wb') as f:
-            f.write(result['data'])
+            f.write(original_file_data)
         
         return {
             'file_path': decrypted_file_path,
             'key': result.get('key', key),
             'algorithm': algorithm,
-            'decrypted_size': len(result['data'])
+            'original_filename': metadata['original_filename'],
+            'decrypted_size': len(original_file_data),
+            'data': original_file_data
         }
     
     def encrypt_data(self, data, key, algorithm):
@@ -107,6 +151,37 @@ class EncryptionManager:
         
         result = self.algorithms[algorithm]('decrypt', encrypted_data, key)
         return result['data']
+    
+    def decrypt_data_with_metadata(self, encrypted_data, key, algorithm):
+        """Decrypt raw data and extract metadata if present"""
+        if algorithm not in self.algorithms:
+            raise ValueError(f"Unsupported algorithm: {algorithm}")
+        
+        result = self.algorithms[algorithm]('decrypt', encrypted_data, key)
+        decrypted_data = result['data']
+        
+        try:
+            # Try to extract metadata
+            metadata_length = int.from_bytes(decrypted_data[:4], 'big')
+            metadata_json = decrypted_data[4:4+metadata_length]
+            metadata = json.loads(metadata_json.decode('utf-8'))
+            
+            # Extract original file data
+            original_file_data = decrypted_data[4+metadata_length:]
+            
+            return {
+                'data': original_file_data,
+                'metadata': metadata,
+                'has_metadata': True
+            }
+            
+        except (json.JSONDecodeError, KeyError, ValueError, IndexError):
+            # No metadata found, return raw data
+            return {
+                'data': decrypted_data,
+                'metadata': None,
+                'has_metadata': False
+            }
     
     def _aes_operations(self, operation, data, key):
         """AES encryption/decryption operations"""

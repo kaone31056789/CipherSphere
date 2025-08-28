@@ -72,7 +72,7 @@
                     {% endif %}
                 </div>
                 <div class="file-actions">
-                    <button class="action-btn" title="Download" onclick="downloadFile({{ file.id }})">
+                    <button class="action-btn" title="Download Encrypted" onclick="downloadFile({{ file.id }})">
                         <i class="fas fa-download"></i>
                     </button>
                     <button class="action-btn" title="Change Security Key" onclick="changeSecurityKey({{ file.id }}, '{{ file.original_filename }}', '{{ file.algorithm }}')">
@@ -743,7 +743,12 @@ function downloadFile(fileId) {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            // Try to parse JSON error response
+            return response.json().then(errorData => {
+                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+            }).catch(() => {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            });
         }
         
         // Get filename from response headers
@@ -778,14 +783,7 @@ function downloadFile(fileId) {
     })
     .catch(error => {
         console.error('Download error:', error);
-        
-        // Fallback to direct window location
-        try {
-            window.location.href = `/vault/download/${fileId}`;
-        } catch (fallbackError) {
-            console.error('Fallback download failed:', fallbackError);
-            showNotification('Download failed. Please try again or contact support.', 'error');
-        }
+        showNotification(`Download failed: ${error.message}`, 'error');
     })
     .finally(() => {
         // Restore button state

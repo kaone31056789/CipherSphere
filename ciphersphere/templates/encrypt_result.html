@@ -77,11 +77,26 @@
                     </div>
                 </div>
                 <div class="file-actions">
-                    <a href="{{ url_for('download_encrypted_file', file_id=result.file_id) if result.file_id else '#' }}" 
+                    {% if result.file_id %}
+                    <!-- File saved to vault - direct download link -->
+                    <a href="{{ url_for('download_encrypted_file', file_id=result.file_id) }}" 
                        class="btn btn-primary">
                         <i class="fas fa-download"></i>
                         Download Encrypted File
                     </a>
+                    {% else %}
+                    <!-- File not saved to vault - use form download -->
+                    <button onclick="downloadEncryptedFile()" class="btn btn-primary" id="downloadBtn">
+                        <i class="fas fa-download"></i>
+                        Download Encrypted File
+                    </button>
+                    
+                    <!-- Hidden form for download -->
+                    <form id="downloadForm" method="POST" action="/download_encrypted_temp" style="display: none;">
+                        <input type="hidden" name="encrypted_content" value="{{ result.data | b64encode }}">
+                        <input type="hidden" name="filename" value="{{ filename }}">
+                    </form>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -204,6 +219,35 @@ function downloadContent() {
     a.download = 'encrypted_content.txt';
     a.click();
     window.URL.revokeObjectURL(url);
+}
+
+function downloadEncryptedFile() {
+    const downloadBtn = document.getElementById('downloadBtn');
+    const originalContent = downloadBtn.innerHTML;
+    
+    // Show loading state
+    downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Downloading...';
+    downloadBtn.disabled = true;
+    
+    try {
+        // Submit the hidden form
+        document.getElementById('downloadForm').submit();
+        
+        // Show success message
+        setTimeout(() => {
+            showNotification('Download started successfully!', 'success');
+        }, 500);
+        
+    } catch (error) {
+        console.error('Download error:', error);
+        showNotification('Download failed. Please try again.', 'error');
+    } finally {
+        // Restore button state after a delay
+        setTimeout(() => {
+            downloadBtn.innerHTML = originalContent;
+            downloadBtn.disabled = false;
+        }, 2000);
+    }
 }
 
 function shareViaEmail() {

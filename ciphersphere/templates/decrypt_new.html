@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Decrypt Data - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="cyber-container">
+        <h1 class="cyber-title">
+            <i class="fas fa-unlock"></i>
+            Decrypt Data
+        </h1>
+        
+        <p class="cyber-subtitle">
+            Decrypt your encrypted text or files using the original key and algorithm.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" enctype="multipart/form-data" class="cyber-form">
+            {{ form.hidden_tag() }}
+            
+            <!-- Algorithm Selection -->
+            <div class="cyber-form-group">
+                {{ form.algorithm.label(class="cyber-label") }}
+                {{ form.algorithm(class="cyber-select") }}
+                <div class="algorithm-info">
+                    <div class="info-item" data-algorithm="AES">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>AES: Advanced Encryption Standard - Industry standard symmetric encryption</span>
+                    </div>
+                    <div class="info-item" data-algorithm="Fernet">
+                        <i class="fas fa-key"></i>
+                        <span>Fernet: Symmetric encryption with built-in authentication</span>
+                    </div>
+                    <div class="info-item" data-algorithm="RSA">
+                        <i class="fas fa-lock"></i>
+                        <span>RSA: Asymmetric encryption using public/private key pairs</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Input -->
+            <div class="cyber-form-group">
+                {{ form.key.label(class="cyber-label") }}
+                {{ form.key(class="cyber-input", placeholder="Enter the decryption key used during encryption") }}
+            </div>
+
+            <!-- Input Method Selection -->
+            <div class="cyber-form-group">
+                <label class="cyber-label">Choose Input Method:</label>
+                <div class="input-method-selector">
+                    <button type="button" class="method-btn active" data-method="text" onclick="selectInputMethod('text')">
+                        <i class="fas fa-font"></i>
+                        Text Input
+                    </button>
+                    <button type="button" class="method-btn" data-method="file" onclick="selectInputMethod('file')">
+                        <i class="fas fa-file-upload"></i>
+                        File Upload
+                    </button>
+                </div>
+            </div>
+
+            <!-- Text Content Input -->
+            <div class="cyber-form-group" id="text-input-section">
+                {{ form.text_content.label(class="cyber-label") }}
+                {{ form.text_content(class="cyber-textarea", rows="8", placeholder="Paste your encrypted text content here") }}
+            </div>
+
+            <!-- File Upload Input -->
+            <div class="cyber-form-group" id="file-input-section" style="display: none;">
+                {{ form.file.label(class="cyber-label") }}
+                <div class="file-upload-area" onclick="document.getElementById('file-input').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click to select encrypted file</p>
+                    <span class="file-types">Supports all file types (.encrypted files recommended)</span>
+                </div>
+                {{ form.file(id="file-input", style="display: none;") }}
+                <div id="file-selected-info" style="display: none;">
+                    <i class="fas fa-file-check text-success"></i>
+                    <span id="selected-file-name"></span>
+                    <button type="button" onclick="clearFile()" class="btn btn-sm btn-outline-secondary ml-2">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="cyber-form-actions">
+                <button type="submit" class="btn btn-warning btn-lg cyber-btn-glow">
+                    <i class="fas fa-unlock"></i>
+                    Decrypt Data
+                </button>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Input Method Selector */
+.input-method-selector {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.method-btn {
+    flex: 1;
+    padding: var(--space-md);
+    border: 2px solid var(--border-medium);
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    font-size: var(--text-base);
+}
+
+.method-btn:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    background: rgba(255, 170, 0, 0.1);
+}
+
+.method-btn.active {
+    border-color: var(--accent-color);
+    background: var(--accent-color);
+    color: var(--bg-primary);
+}
+
+/* Algorithm Info */
+.algorithm-info {
+    margin-top: var(--space-sm);
+    display: none;
+}
+
+.algorithm-info.active {
+    display: block;
+}
+
+.info-item {
+    display: none;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    background: rgba(255, 170, 0, 0.1);
+    border: 1px solid rgba(255, 170, 0, 0.3);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    margin-top: var(--space-sm);
+}
+
+.info-item.active {
+    display: flex;
+}
+
+/* File Upload Area */
+.file-upload-area {
+    border: 2px dashed var(--border-medium);
+    border-radius: 12px;
+    padding: var(--space-xl);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 170, 0, 0.05);
+}
+
+.file-upload-area:hover {
+    border-color: var(--accent-color);
+    background: rgba(255, 170, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.file-upload-area i {
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin-bottom: var(--space-sm);
+}
+
+.file-upload-area p {
+    margin: 0;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.file-types {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+}
+
+#file-selected-info {
+    margin-top: var(--space-sm);
+    padding: var(--space-sm);
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+</style>
+
+<script>
+function selectInputMethod(method) {
+    // Update button states
+    document.querySelectorAll('.method-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-method="${method}"]`).classList.add('active');
+    
+    // Show/hide sections
+    const textSection = document.getElementById('text-input-section');
+    const fileSection = document.getElementById('file-input-section');
+    
+    if (method === 'text') {
+        textSection.style.display = 'block';
+        fileSection.style.display = 'none';
+        // Clear file input when switching to text
+        document.getElementById('file-input').value = '';
+        document.getElementById('file-selected-info').style.display = 'none';
+    } else {
+        textSection.style.display = 'none';
+        fileSection.style.display = 'block';
+        // Clear text input when switching to file
+        document.querySelector('textarea[name="text_content"]').value = '';
+    }
+}
+
+// File selection handling
+document.getElementById('file-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        document.getElementById('selected-file-name').textContent = file.name;
+        document.getElementById('file-selected-info').style.display = 'flex';
+    }
+});
+
+function clearFile() {
+    document.getElementById('file-input').value = '';
+    document.getElementById('file-selected-info').style.display = 'none';
+}
+
+// Algorithm info display
+document.querySelector('select[name="algorithm"]').addEventListener('change', function() {
+    const algorithm = this.value;
+    document.querySelectorAll('.info-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    const targetItem = document.querySelector(`[data-algorithm="${algorithm}"]`);
+    if (targetItem) {
+        targetItem.classList.add('active');
+    }
+    document.querySelector('.algorithm-info').classList.add('active');
+});
+
+// Initialize algorithm info
+document.querySelector('select[name="algorithm"]').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

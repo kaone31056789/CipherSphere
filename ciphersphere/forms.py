@@ -103,3 +103,7 @@ class AdminUserForm(FlaskForm):
                         ],
                         validators=[DataRequired()])
     new_password = PasswordField('New Password (for reset)', validators=[Optional(), Length(min=6)])
+
+class DownloadForm(FlaskForm):
+    temp_filename = StringField('Temp Filename', validators=[DataRequired()])
+    filename = StringField('Original Filename', validators=[DataRequired()])

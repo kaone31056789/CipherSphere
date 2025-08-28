@@ -60,25 +60,25 @@
                 </div>
 
                 <div class="tab-content">
-                    <!-- Text Content Tab -->
-                    <div class="tab-pane active" id="text-tab">
-                        <div class="cyber-form-group">
-                            {{ form.text_content.label(class="cyber-label") }}
-                            {{ form.text_content(class="cyber-textarea", rows="8", placeholder="Paste the encrypted text here...") }}
-                        </div>
+                    <!-- Text Content Section -->
+                    <div class="cyber-form-group" id="text-section">
+                        {{ form.text_content.label(class="cyber-label") }}
+                        {{ form.text_content(class="cyber-textarea", rows="8", placeholder="Paste the encrypted text here...") }}
                     </div>
 
-                    <!-- File Upload Tab -->
-                    <div class="tab-pane" id="file-tab">
-                        <div class="cyber-form-group">
-                            {{ form.file.label(class="cyber-label") }}
-                            <div class="file-upload-area" onclick="document.getElementById('file').click()">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Click to upload encrypted file</p>
-                                <span class="file-types">Upload the encrypted file you want to decrypt</span>
-                                {{ form.file(class="cyber-file-input", id="file") }}
-                            </div>
+                    <!-- File Upload Section -->
+                    <div class="cyber-form-group" id="file-section">
+                        {{ form.file.label(class="cyber-label") }}
+                        <div class="file-upload-area" onclick="document.getElementById('file').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload encrypted file</p>
+                            <span class="file-types">Upload the encrypted file you want to decrypt</span>
+                            {{ form.file(class="cyber-file-input", id="file") }}
                         </div>
+                    </div>
+                    
+                    <div class="tab-instructions">
+                        <p><i class="fas fa-info-circle"></i> Use the tabs above to switch between text input and file upload.</p>
                     </div>
                 </div>
             </div>
@@ -171,12 +171,30 @@
     color: var(--text-secondary);
 }
 
-.tab-pane {
-    display: none;
+/* Tab Content Container */
+.tab-content {
+    margin-top: var(--space-md);
 }
 
-.tab-pane.active {
-    display: block;
+/* Initially style text section as active, file section as inactive */
+#text-section {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#file-section {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.tab-instructions {
+    margin-top: var(--space-sm);
+    padding: var(--space-sm);
+    background: rgba(255, 170, 0, 0.1);
+    border: 1px solid rgba(255, 170, 0, 0.3);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-align: center;
 }
 
 /* File Upload Area */
@@ -227,16 +245,28 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
-        // Update active tab pane
-        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-        document.getElementById(tab + '-tab').classList.add('active');
+        // Show/hide sections based on selected tab
+        const textSection = document.getElementById('text-section');
+        const fileSection = document.getElementById('file-section');
         
-        // Clear the other input
         if (tab === 'text') {
+            textSection.style.opacity = '1';
+            textSection.style.pointerEvents = 'auto';
+            fileSection.style.opacity = '0.3';
+            fileSection.style.pointerEvents = 'none';
+            // Clear file when switching to text
             document.getElementById('file').value = '';
         } else {
+            textSection.style.opacity = '0.3';
+            textSection.style.pointerEvents = 'none';
+            fileSection.style.opacity = '1';
+            fileSection.style.pointerEvents = 'auto';
+            // Clear text when switching to file
             document.querySelector('textarea[name="text_content"]').value = '';
         }
+        
+        // Don't automatically clear inputs when switching tabs
+        // Let users manually clear them if needed
     });
 });
 
@@ -253,11 +283,29 @@ document.querySelector('select[name="algorithm"]').addEventListener('change', fu
 document.getElementById('file').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
+        // Clear text content when file is selected
+        document.querySelector('textarea[name="text_content"]').value = '';
+        
         const uploadArea = document.querySelector('.file-upload-area');
         uploadArea.innerHTML = `
             <i class="fas fa-file-check"></i>
             <p>File selected: ${file.name}</p>
             <span class="file-types">Size: ${(file.size / 1024).toFixed(2)} KB</span>
+        `;
+    }
+});
+
+// Text content handling
+document.querySelector('textarea[name="text_content"]').addEventListener('input', function() {
+    if (this.value.trim()) {
+        // Clear file input when text is entered
+        document.getElementById('file').value = '';
+        // Reset file upload area
+        const uploadArea = document.querySelector('.file-upload-area');
+        uploadArea.innerHTML = `
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to upload encrypted file</p>
+            <span class="file-types">Upload the encrypted file you want to decrypt</span>
         `;
     }
 });

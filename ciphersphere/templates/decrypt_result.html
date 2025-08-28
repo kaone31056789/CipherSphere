@@ -1,173 +1,619 @@
 {% extends "base.html" %}
 
+{% block title %}Decryption Result - CipherSphere{% endblock %}
+
 {% block content %}
-<div class="min-h-screen bg-gray-900 text-white p-8">
-    <div class="max-w-4xl mx-auto">
-        <div class="cyber-card p-8">
-            <h2 class="text-3xl font-bold mb-6 text-center text-cyan-400">Decryption Complete</h2>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Decryption Details -->
-                <div class="space-y-6">
-                    <div class="bg-gray-800 p-6 rounded-lg border border-cyan-500/30">
-                        <h3 class="text-xl font-semibold mb-4 text-cyan-300">Decryption Details</h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-300">Algorithm:</span>
-                                <span class="text-cyan-400 font-mono">{{ algorithm.upper() }}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-300">Status:</span>
-                                <span class="text-green-400 flex items-center">
-                                    <i class="fas fa-check-circle mr-2"></i>
-                                    Success
-                                </span>
-                            </div>
-                            {% if not is_text and filename %}
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-300">Original File:</span>
-                                <span class="text-cyan-400 font-mono">{{ filename }}</span>
-                            </div>
-                            {% endif %}
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-300">Timestamp:</span>
-                                <span class="text-gray-400">{{ moment().format('YYYY-MM-DD HH:mm:ss') }}</span>
-                            </div>
-                        </div>
-                    </div>
+<style>
+.modern-result-container {
+    min-height: 100vh;
+    background: transparent;
+    padding: 2rem 1rem;
+    position: relative;
+    overflow: hidden;
+}
 
-                    <!-- Security Notice -->
-                    <div class="bg-amber-900/20 border border-amber-500/30 p-4 rounded-lg">
-                        <div class="flex items-start">
-                            <i class="fas fa-exclamation-triangle text-amber-400 mt-1 mr-3"></i>
-                            <div>
-                                <h4 class="text-amber-300 font-semibold mb-2">Security Notice</h4>
-                                <p class="text-amber-200 text-sm">
-                                    Decrypted content is temporarily displayed. For security, clear your browser cache after viewing.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+.modern-result-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    pointer-events: none;
+}
 
-                <!-- Result Display -->
-                <div class="space-y-6">
-                    {% if is_text %}
-                    <!-- Text Result -->
-                    <div class="bg-gray-800 p-6 rounded-lg border border-cyan-500/30">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-semibold text-cyan-300">Decrypted Text</h3>
-                            <button onclick="copyDecryptedText()" class="action-btn bg-cyan-600 hover:bg-cyan-700">
-                                <i class="fas fa-copy mr-2"></i>Copy
-                            </button>
-                        </div>
-                        <div class="bg-gray-900 p-4 rounded border border-gray-700 max-h-96 overflow-y-auto">
-                            <pre id="decryptedText" class="text-gray-200 whitespace-pre-wrap break-words">{{ result.data.decode('utf-8') if result.data else 'No content to display' }}</pre>
-                        </div>
-                    </div>
-                    {% else %}
-                    <!-- File Result -->
-                    <div class="bg-gray-800 p-6 rounded-lg border border-cyan-500/30">
-                        <h3 class="text-xl font-semibold mb-4 text-cyan-300">Decrypted File</h3>
-                        <div class="text-center py-8">
-                            <i class="fas fa-file-alt text-6xl text-cyan-400 mb-4"></i>
-                            <p class="text-gray-300 mb-6">File successfully decrypted!</p>
-                            <a href="data:application/octet-stream;base64,{{ result.data | b64encode }}" 
-                               download="{{ filename.replace('encrypted_', '') if filename else 'decrypted_file' }}"
-                               class="action-btn bg-green-600 hover:bg-green-700">
-                                <i class="fas fa-download mr-2"></i>Download Decrypted File
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
+.result-card {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 3rem;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+}
+
+.success-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10dc60, #16df7e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 10px 30px rgba(16, 220, 96, 0.3);
+    animation: successPulse 2s ease-in-out infinite;
+}
+
+@keyframes successPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.result-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.result-subtitle {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0;
+}
+
+.modern-alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 500;
+    border: none;
+    animation: slideIn 0.5s ease;
+}
+
+.modern-alert.alert-success {
+    background: linear-gradient(135deg, rgba(16, 220, 96, 0.2), rgba(22, 223, 126, 0.2));
+    color: #10dc60;
+    border: 1px solid rgba(16, 220, 96, 0.3);
+}
+
+.modern-alert.alert-error {
+    background: linear-gradient(135deg, rgba(255, 67, 54, 0.2), rgba(244, 67, 54, 0.2));
+    color: #ff4336;
+    border: 1px solid rgba(255, 67, 54, 0.3);
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.detail-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.detail-card:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.detail-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #00d4ff, #0099cc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.detail-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.detail-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.content-section {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #00d4ff, #0099cc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.modern-textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    color: white;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    resize: vertical;
+    min-height: 200px;
+    margin-bottom: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.modern-textarea:focus {
+    outline: none;
+    border-color: rgba(0, 212, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.modern-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.modern-btn:hover::before {
+    left: 100%;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00d4ff, #0099cc);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10dc60, #16df7e);
+    color: white;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.file-download-section {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.download-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00d4ff, #0099cc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 2.5rem;
+    color: white;
+    box-shadow: 0 15px 35px rgba(0, 212, 255, 0.3);
+    animation: downloadPulse 3s ease-in-out infinite;
+}
+
+@keyframes downloadPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 15px 35px rgba(0, 212, 255, 0.3); }
+    50% { transform: scale(1.05); box-shadow: 0 20px 45px rgba(0, 212, 255, 0.4); }
+}
+
+.download-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.download-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 2rem;
+}
+
+.security-notice {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.05), rgba(255, 152, 0, 0.03));
+    border: 1px solid rgba(255, 193, 7, 0.15);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 2rem 0;
+    backdrop-filter: blur(10px);
+}
+
+.notice-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.notice-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.notice-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.notice-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.notice-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.notice-list li::before {
+    content: '✓';
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10dc60, #16df7e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+    flex-shrink: 0;
+}
+
+.action-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .result-card {
+        margin: 1rem;
+        padding: 2rem 1.5rem;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .button-group, .action-buttons {
+        flex-direction: column;
+    }
+    
+    .modern-btn {
+        justify-content: center;
+    }
+}
+</style>
+
+<div class="modern-result-container">
+    <div class="result-card">
+        <!-- Success Header -->
+        <div class="success-header">
+            <div class="success-icon">
+                <i class="fas fa-unlock-alt"></i>
             </div>
+            <h1 class="result-title">Decryption Complete</h1>
+            <p class="result-subtitle">Your data has been successfully decrypted</p>
+        </div>
 
-            <!-- Actions -->
-            <div class="mt-8 flex flex-wrap gap-4 justify-center">
-                <a href="{{ url_for('decrypt') }}" class="action-btn bg-blue-600 hover:bg-blue-700">
-                    <i class="fas fa-lock-open mr-2"></i>Decrypt Another
-                </a>
-                <a href="{{ url_for('encrypt') }}" class="action-btn bg-purple-600 hover:bg-purple-700">
-                    <i class="fas fa-lock mr-2"></i>Encrypt Data
-                </a>
-                <a href="{{ url_for('dashboard') }}" class="action-btn bg-gray-600 hover:bg-gray-700">
-                    <i class="fas fa-home mr-2"></i>Dashboard
-                </a>
-                <button onclick="clearSensitiveData()" class="action-btn bg-red-600 hover:bg-red-700">
-                    <i class="fas fa-trash mr-2"></i>Clear Data
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="modern-alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Decryption Details -->
+        <div class="details-grid">
+            <div class="detail-card">
+                <div class="detail-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="detail-label">Algorithm</div>
+                <div class="detail-value">{{ algorithm }}</div>
+            </div>
+            
+            {% if is_text %}
+            <div class="detail-card">
+                <div class="detail-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="detail-label">Content Type</div>
+                <div class="detail-value">Text Content</div>
+            </div>
+            {% else %}
+            <div class="detail-card">
+                <div class="detail-icon">
+                    <i class="fas fa-file"></i>
+                </div>
+                <div class="detail-label">File Name</div>
+                <div class="detail-value">{{ filename }}</div>
+            </div>
+            {% endif %}
+            
+            {% if timestamp %}
+            <div class="detail-card">
+                <div class="detail-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="detail-label">Decrypted</div>
+                <div class="detail-value">{{ timestamp }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Content Display -->
+        {% if is_text %}
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h3 class="section-title">Decrypted Content</h3>
+            </div>
+            <textarea class="modern-textarea" readonly rows="10">{{ decrypted_text or decrypted_content }}</textarea>
+            <div class="button-group">
+                <button class="modern-btn btn-primary" onclick="copyContent()">
+                    <i class="fas fa-copy"></i>
+                    Copy Content
                 </button>
+                <button class="modern-btn btn-success" onclick="downloadContent()">
+                    <i class="fas fa-download"></i>
+                    Download as File
+                </button>
+            </div>
+        </div>
+        {% else %}
+        <div class="content-section">
+            <div class="file-download-section">
+                <div class="download-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <h3 class="download-title">File Ready for Download</h3>
+                <p class="download-subtitle">Your decrypted file is ready and waiting for you</p>
+                
+                {% if decrypted_file %}
+                <!-- Direct download link styled as a button -->
+                <a href="{{ url_for('test_download_file') }}" class="modern-btn btn-primary" style="text-decoration: none; display: inline-block;">
+                    <i class="fas fa-download"></i>
+                    Download Decrypted File
+                </a>
+                {% else %}
+                <button class="modern-btn btn-secondary" disabled>
+                    <i class="fas fa-exclamation-triangle"></i>
+                    File Not Available
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Security Notice -->
+        <div class="security-notice">
+            <div class="notice-header">
+                <div class="notice-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h4 class="notice-title">Security Information</h4>
+            </div>
+            <ul class="notice-list">
+                <li>Your data has been successfully decrypted</li>
+                <li>The decrypted content is now available for download</li>
+                <li>For security, temporary files are automatically cleaned up</li>
+                <li>Consider encrypting sensitive data again after use</li>
+            </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-section">
+            <div class="action-buttons">
+                <a href="{{ url_for('decrypt_simple') }}" class="modern-btn btn-secondary">
+                    <i class="fas fa-unlock"></i>
+                    Decrypt More Data
+                </a>
+                <a href="{{ url_for('encrypt') }}" class="modern-btn btn-primary">
+                    <i class="fas fa-lock"></i>
+                    Encrypt Data
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="modern-btn btn-outline">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Success Toast -->
-<div id="successToast" class="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300">
-    <div class="flex items-center">
-        <i class="fas fa-check-circle mr-2"></i>
-        <span id="toastMessage">Copied to clipboard!</span>
-    </div>
-</div>
-
 <script>
-function copyDecryptedText() {
-    const textElement = document.getElementById('decryptedText');
-    const text = textElement.textContent;
-    
-    navigator.clipboard.writeText(text).then(function() {
-        showToast('Decrypted text copied to clipboard!');
-    }).catch(function() {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
+function copyContent() {
+    const textarea = document.querySelector('.modern-textarea');
+    if (textarea) {
+        textarea.select();
         document.execCommand('copy');
-        document.body.removeChild(textArea);
-        showToast('Decrypted text copied to clipboard!');
-    });
-}
-
-function clearSensitiveData() {
-    if (confirm('Are you sure you want to clear all sensitive data from this page?')) {
-        // Clear text content
-        const textElement = document.getElementById('decryptedText');
-        if (textElement) {
-            textElement.textContent = '[Data Cleared for Security]';
-        }
         
-        // Clear any download links
-        const downloadLinks = document.querySelectorAll('a[download]');
-        downloadLinks.forEach(link => {
-            link.href = '#';
-            link.onclick = function(e) {
-                e.preventDefault();
-                alert('Data has been cleared for security.');
-            };
-        });
+        // Visual feedback
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-success');
         
-        showToast('Sensitive data cleared!');
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-primary');
+        }, 2000);
     }
 }
 
-function showToast(message) {
-    const toast = document.getElementById('successToast');
-    const messageElement = document.getElementById('toastMessage');
+function downloadContent() {
+    const content = document.querySelector('.modern-textarea').value;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'decrypted_content.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
     
-    messageElement.textContent = message;
-    toast.classList.remove('translate-x-full');
+    // Visual feedback
+    const btn = event.target.closest('button');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> Downloaded!';
     
     setTimeout(() => {
-        toast.classList.add('translate-x-full');
-    }, 3000);
+        btn.innerHTML = originalHTML;
+    }, 2000);
 }
 
-// Auto-clear sensitive data after 5 minutes for security
-setTimeout(() => {
-    if (confirm('For security purposes, would you like to clear sensitive data from this page?')) {
-        clearSensitiveData();
-    }
-}, 300000); // 5 minutes
 </script>
 {% endblock %}

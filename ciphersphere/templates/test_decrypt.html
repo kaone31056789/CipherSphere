@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Test Decrypt - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="cyber-container">
+        <h1 class="cyber-title">Test Decrypt Data</h1>
+        
+        <form method="POST" enctype="multipart/form-data" class="cyber-form">
+            {{ form.hidden_tag() }}
+            
+            <!-- Algorithm Selection -->
+            <div class="cyber-form-group">
+                {{ form.algorithm.label(class="cyber-label") }}
+                {{ form.algorithm(class="cyber-select") }}
+            </div>
+
+            <!-- Key Input -->
+            <div class="cyber-form-group">
+                {{ form.key.label(class="cyber-label") }}
+                {{ form.key(class="cyber-input", placeholder="Enter decryption key") }}
+            </div>
+
+            <!-- File Upload -->
+            <div class="cyber-form-group">
+                {{ form.file.label(class="cyber-label") }}
+                {{ form.file(class="cyber-file-input") }}
+            </div>
+
+            <!-- Text Content -->
+            <div class="cyber-form-group">
+                {{ form.text_content.label(class="cyber-label") }}
+                {{ form.text_content(class="cyber-textarea", placeholder="Or paste encrypted text content here", rows="8") }}
+            </div>
+
+            <!-- Submit Button -->
+            <div class="cyber-form-actions">
+                <button type="submit" class="btn btn-warning btn-lg cyber-btn-glow">
+                    <i class="fas fa-unlock"></i>
+                    Test Decrypt
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

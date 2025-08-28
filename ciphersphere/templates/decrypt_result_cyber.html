@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Decryption Result - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="cyber-container">
+    <div class="cyber-card">
+        <div class="cyber-card-header">
+            <h2 class="cyber-title">
+                <i class="fas fa-unlock-alt"></i>
+                Decryption Complete
+            </h2>
+            <p class="cyber-subtitle">Your data has been successfully decrypted</p>
+        </div>
+
+        <div class="result-container">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} cyber-alert">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Decryption Details -->
+            <div class="encryption-details">
+                <div class="detail-item">
+                    <i class="fas fa-unlock"></i>
+                    <span class="detail-label">Algorithm:</span>
+                    <span class="detail-value">{{ algorithm }}</span>
+                </div>
+                {% if is_text %}
+                <div class="detail-item">
+                    <i class="fas fa-file-text"></i>
+                    <span class="detail-label">Type:</span>
+                    <span class="detail-value">Text Content</span>
+                </div>
+                {% else %}
+                <div class="detail-item">
+                    <i class="fas fa-file"></i>
+                    <span class="detail-label">File:</span>
+                    <span class="detail-value">{{ filename }}</span>
+                </div>
+                {% endif %}
+                {% if timestamp %}
+                <div class="detail-item">
+                    <i class="fas fa-clock"></i>
+                    <span class="detail-label">Decrypted:</span>
+                    <span class="detail-value">{{ timestamp }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Result Output -->
+            {% if is_text %}
+            <div class="encrypted-content">
+                <label class="cyber-label">
+                    <i class="fas fa-unlock-alt"></i>
+                    Decrypted Content:
+                </label>
+                <div class="content-display">
+                    <textarea class="cyber-textarea" readonly rows="10">{{ decrypted_content }}</textarea>
+                    <div class="content-actions">
+                        <button class="btn btn-primary" onclick="copyContent()">
+                            <i class="fas fa-copy"></i>
+                            Copy Content
+                        </button>
+                        <button class="btn btn-success" onclick="downloadContent()">
+                            <i class="fas fa-download"></i>
+                            Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="file-result">
+                <div class="file-info">
+                    <i class="fas fa-file-check"></i>
+                    <div class="file-details">
+                        <h4>Decrypted File Ready</h4>
+                        <p>Your file has been decrypted and is ready for download.</p>
+                    </div>
+                </div>
+                <div class="file-actions">
+                    {% if download_url %}
+                    <a href="{{ download_url }}" class="btn btn-primary" download>
+                        <i class="fas fa-download"></i>
+                        Download Decrypted File
+                    </a>
+                    {% else %}
+                    <button onclick="downloadDecryptedFile()" class="btn btn-primary" id="downloadBtn">
+                        <i class="fas fa-download"></i>
+                        Download Decrypted File
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Security Notice -->
+            <div class="security-notice">
+                <i class="fas fa-info-circle"></i>
+                <div class="notice-content">
+                    <h4>Decryption Complete</h4>
+                    <ul>
+                        <li>Your data has been successfully decrypted</li>
+                        <li>The decrypted content is now available for download</li>
+                        <li>For security, temporary files are automatically cleaned up</li>
+                        <li>Consider encrypting sensitive data again after use</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{{ url_for('decrypt_simple') }}" class="btn btn-secondary">
+                    <i class="fas fa-unlock"></i>
+                    Decrypt More Data
+                </a>
+                <a href="{{ url_for('encrypt') }}" class="btn btn-primary">
+                    <i class="fas fa-lock"></i>
+                    Encrypt Data
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyContent() {
+    const textarea = document.querySelector('.cyber-textarea');
+    if (textarea) {
+        textarea.select();
+        document.execCommand('copy');
+        
+        // Visual feedback
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.classList.add('btn-success');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+        }, 2000);
+    }
+}
+
+function downloadContent() {
+    const content = document.querySelector('.cyber-textarea').value;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'decrypted_content.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+function downloadDecryptedFile() {
+    const downloadBtn = document.getElementById('downloadBtn');
+    const originalContent = downloadBtn.innerHTML;
+    
+    // Show loading state
+    downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+    downloadBtn.disabled = true;
+    
+    try {
+        {% if download_url %}
+        window.location.href = "{{ download_url }}";
+        {% else %}
+        // Create form and submit for download
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/download_decrypted_temp';
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'filename';
+        input.value = '{{ filename }}';
+        form.appendChild(input);
+        
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+        {% endif %}
+        
+        // Show success message
+        setTimeout(() => {
+            downloadBtn.innerHTML = '<i class="fas fa-check"></i> Downloaded!';
+            downloadBtn.classList.add('btn-success');
+        }, 500);
+        
+    } catch (error) {
+        console.error('Download error:', error);
+        downloadBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+        downloadBtn.classList.add('btn-danger');
+    } finally {
+        // Reset button after delay
+        setTimeout(() => {
+            downloadBtn.innerHTML = originalContent;
+            downloadBtn.disabled = false;
+            downloadBtn.classList.remove('btn-success', 'btn-danger');
+        }, 3000);
+    }
+}
+</script>
+{% endblock %}

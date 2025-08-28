@@ -1,0 +1,780 @@
+{% extends "base.html" %}
+
+{% block title %}Decrypt - CipherSphere{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <div class="modern-card">
+        <!-- Header Section -->
+        <div class="modern-header">
+            <div class="header-icon">
+                <i class="fas fa-unlock-alt"></i>
+            </div>
+            <div class="header-content">
+                <h1 class="modern-title">Decrypt Your Data</h1>
+                <p class="modern-subtitle">Unlock your encrypted files and text with military-grade security</p>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="modern-alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" enctype="multipart/form-data" class="modern-form">
+            {{ form.hidden_tag() }}
+            
+            <!-- Algorithm & Key Section -->
+            <div class="form-grid">
+                <div class="form-section">
+                    <label class="modern-label">
+                        <i class="fas fa-shield-alt"></i>
+                        Decryption Algorithm
+                    </label>
+                    {{ form.algorithm(class="modern-select") }}
+                    <div class="algorithm-info" id="algorithmInfo">
+                        <div class="info-badge" data-algorithm="AES">
+                            <i class="fas fa-bolt"></i>
+                            <div class="badge-content">
+                                <strong>AES (Advanced Encryption Standard)</strong>
+                                <span>Lightning-fast symmetric encryption • Industry standard • Perfect for large files</span>
+                            </div>
+                        </div>
+                        <div class="info-badge" data-algorithm="Fernet">
+                            <i class="fas fa-shield-halved"></i>
+                            <div class="badge-content">
+                                <strong>Fernet (Symmetric Encryption)</strong>
+                                <span>Authenticated encryption with built-in integrity • Secure by design • Easy to use</span>
+                            </div>
+                        </div>
+                        <div class="info-badge" data-algorithm="RSA">
+                            <i class="fas fa-lock"></i>
+                            <div class="badge-content">
+                                <strong>RSA (Asymmetric Encryption)</strong>
+                                <span>Public-key cryptography • Secure key exchange • Perfect for small data</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="modern-label">
+                        <i class="fas fa-key"></i>
+                        Decryption Key
+                    </label>
+                    {{ form.key(class="modern-input", placeholder="Enter your decryption key") }}
+                    <div class="input-help">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Use the exact key from encryption</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Tabs -->
+            <div class="modern-tabs">
+                <div class="tab-header">
+                    <button type="button" class="tab-button active" data-tab="text">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Text Content</span>
+                    </button>
+                    <button type="button" class="tab-button" data-tab="file">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>Upload File</span>
+                    </button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- Text Tab -->
+                    <div class="tab-panel active" id="text-panel">
+                        <div class="input-group">
+                            <label class="modern-label">
+                                <i class="fas fa-code"></i>
+                                Encrypted Text Content
+                            </label>
+                            {{ form.text_content(class="modern-textarea", rows="8", placeholder="Paste your encrypted text here...") }}
+                        </div>
+                    </div>
+
+                    <!-- File Tab -->
+                    <div class="tab-panel" id="file-panel">
+                        <div class="upload-zone" onclick="triggerFileInput()">
+                            <div class="upload-visual">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <h3>Drop file here or click to browse</h3>
+                                <p>Supports all encrypted file formats • Max 50MB</p>
+                            </div>
+                            {{ form.file(class="file-input", id="fileInput") }}
+                        </div>
+                        
+                        <div class="file-preview" id="filePreview" style="display: none;">
+                            <div class="file-item">
+                                <div class="file-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="file-details">
+                                    <span class="file-name"></span>
+                                    <span class="file-size"></span>
+                                </div>
+                                <button type="button" class="remove-btn" onclick="removeFile()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-section">
+                <button type="submit" class="primary-button">
+                    <i class="fas fa-unlock"></i>
+                    <span>Decrypt Now</span>
+                </button>
+                <a href="{{ url_for('dashboard') }}" class="secondary-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.modern-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.modern-card {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.1),
+        0 1px 0 rgba(255, 255, 255, 0.1) inset;
+}
+
+.modern-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #00d4ff, #0099cc);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #000;
+    box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+}
+
+.header-content h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #ffffff;
+    background: linear-gradient(135deg, #ffffff, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header-content p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.1rem;
+}
+
+.modern-alert {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.modern-alert.alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+}
+
+.modern-alert.alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.form-section {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.form-section:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.modern-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.modern-label i {
+    color: #00d4ff;
+}
+
+.modern-select, .modern-input {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.modern-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2300d4ff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 1rem center;
+    background-repeat: no-repeat;
+    background-size: 1rem;
+    padding-right: 3rem;
+}
+
+.modern-select:focus, .modern-input:focus {
+    outline: none;
+    border-color: #00d4ff;
+    box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.15), 0 8px 32px rgba(0, 212, 255, 0.1);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+    transform: translateY(-2px);
+}
+
+.modern-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.algorithm-info {
+    margin-top: 1rem;
+}
+
+.info-badge {
+    display: none;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 170, 255, 0.05));
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    border-radius: 16px;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.4s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.info-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.info-badge:hover::before {
+    left: 100%;
+}
+
+.info-badge .fas {
+    color: #00d4ff;
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.badge-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.badge-content strong {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.badge-content span {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.info-badge.active {
+    display: flex;
+    animation: slideInRight 0.5s ease;
+    border-color: #00d4ff;
+    box-shadow: 0 12px 40px rgba(0, 212, 255, 0.2);
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.input-help {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+}
+
+.modern-tabs {
+    margin-bottom: 2rem;
+}
+
+.tab-header {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 0.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.tab-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-button.active {
+    background: #00d4ff;
+    color: #000;
+    box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.tab-button:not(.active):hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+.modern-textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #ffffff;
+    font-size: 1rem;
+    font-family: 'Courier New', monospace;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+.modern-textarea:focus {
+    outline: none;
+    border-color: #00d4ff;
+    box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.modern-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.upload-zone {
+    border: 2px dashed rgba(0, 212, 255, 0.3);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.upload-zone:hover {
+    border-color: #00d4ff;
+    background: rgba(0, 212, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.upload-visual .upload-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #00d4ff, #0099cc);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 32px;
+    color: #000;
+    box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+}
+
+.upload-visual h3 {
+    margin: 0 0 0.5rem 0;
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.upload-visual p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.file-input {
+    display: none;
+}
+
+.file-preview {
+    margin-top: 1rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    color: #10b981;
+}
+
+.file-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(16, 185, 129, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.file-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.file-name {
+    font-weight: 600;
+}
+
+.file-size {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.remove-btn {
+    width: 32px;
+    height: 32px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    color: #ef4444;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.remove-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.action-section {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.primary-button, .secondary-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.primary-button {
+    background: linear-gradient(135deg, #00d4ff, #0099cc);
+    color: #000;
+    box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+}
+
+.primary-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0, 212, 255, 0.4);
+}
+
+.secondary-button {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.secondary-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .modern-container {
+        margin: 1rem auto;
+        padding: 0 0.5rem;
+    }
+    
+    .modern-card {
+        padding: 1.5rem;
+    }
+    
+    .modern-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .action-section {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+// Modern tab functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.dataset.tab;
+            
+            // Remove active class from all buttons and panels
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding panel
+            this.classList.add('active');
+            document.getElementById(targetTab + '-panel').classList.add('active');
+            
+            // Clear other input when switching tabs
+            if (targetTab === 'text') {
+                document.getElementById('fileInput').value = '';
+                document.getElementById('filePreview').style.display = 'none';
+            } else {
+                document.querySelector('textarea[name="text_content"]').value = '';
+            }
+        });
+    });
+});
+
+// Modern file upload functionality
+function triggerFileInput() {
+    document.getElementById('fileInput').click();
+}
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('filePreview');
+    
+    if (file) {
+        const fileName = file.name;
+        const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+        
+        document.querySelector('.file-name').textContent = fileName;
+        document.querySelector('.file-size').textContent = fileSize;
+        preview.style.display = 'block';
+        
+        // Clear text content when file is selected
+        document.querySelector('textarea[name="text_content"]').value = '';
+    }
+});
+
+function removeFile() {
+    document.getElementById('fileInput').value = '';
+    document.getElementById('filePreview').style.display = 'none';
+}
+
+// Modern algorithm info display
+function updateAlgorithmInfo() {
+    const algorithmSelect = document.querySelector('select[name="algorithm"]');
+    const infoBadges = document.querySelectorAll('.info-badge');
+    const selectedAlgorithm = algorithmSelect.value;
+    
+    infoBadges.forEach(badge => {
+        const badgeAlgorithm = badge.dataset.algorithm;
+        
+        if (badgeAlgorithm === selectedAlgorithm) {
+            badge.classList.add('active');
+        } else {
+            badge.classList.remove('active');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const algorithmSelect = document.querySelector('select[name="algorithm"]');
+    if (algorithmSelect) {
+        algorithmSelect.addEventListener('change', updateAlgorithmInfo);
+        // Add a small delay to ensure the form is fully rendered
+        setTimeout(updateAlgorithmInfo, 100);
+    }
+});
+
+// Enhanced form validation with modern alerts
+document.querySelector('form').addEventListener('submit', function(e) {
+    const textContent = document.querySelector('textarea[name="text_content"]').value.trim();
+    const fileInput = document.getElementById('fileInput').files[0];
+    const keyInput = document.querySelector('input[name="key"]').value.trim();
+    
+    if (!keyInput) {
+        e.preventDefault();
+        showModernAlert('Please enter a decryption key.', 'error');
+        return;
+    }
+    
+    if (!textContent && !fileInput) {
+        e.preventDefault();
+        showModernAlert('Please provide either text content or upload a file to decrypt.', 'error');
+        return;
+    }
+    
+    if (textContent && fileInput) {
+        e.preventDefault();
+        showModernAlert('Please provide either text content OR a file, not both.', 'error');
+        return;
+    }
+});
+
+function showModernAlert(message, type) {
+    // Remove any existing alerts
+    const existingAlert = document.querySelector('.temp-alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+    
+    // Create new alert
+    const alert = document.createElement('div');
+    alert.className = `modern-alert alert-${type} temp-alert`;
+    alert.innerHTML = `
+        <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    // Insert at the top of the form
+    const form = document.querySelector('.modern-form');
+    form.insertBefore(alert, form.firstChild);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        alert.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}
+

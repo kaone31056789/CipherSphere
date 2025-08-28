@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload Test</title>
+</head>
+<body>
+    <h1>Simple File Upload Test</h1>
+    <form method="POST" enctype="multipart/form-data" action="/test_upload">
+        <div>
+            <label for="test_file">Select File:</label>
+            <input type="file" id="test_file" name="test_file" required>
+        </div>
+        <div>
+            <label for="algorithm">Algorithm:</label>
+            <select name="algorithm" required>
+                <option value="AES">AES</option>
+                <option value="Fernet">Fernet</option>
+            </select>
+        </div>
+        <div>
+            <label for="key">Key:</label>
+            <input type="text" name="key" required>
+        </div>
+        <button type="submit">Upload Test</button>
+    </form>
+</body>
+</html>
