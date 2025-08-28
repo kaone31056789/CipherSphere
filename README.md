@@ -250,16 +250,7 @@ python app.py
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📋 Todo List
 
-- [ ] Implement two-factor authentication (2FA)
-- [ ] Add email verification for registration
-- [ ] Create REST API with token authentication
-- [ ] Add file versioning system
-- [ ] Implement real-time notifications
-- [ ] Add bulk file operations
-- [ ] Create mobile application
-- [ ] Add blockchain integration for audit trails
 
 ## 🐛 Known Issues
 
