@@ -280,7 +280,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <p align="center">
-  Made with ❤️ by Parikshit <a href="https://github.com/your-username">Your Name</a>
+  Made with ❤️ by Parikshit <a 
 </p>
 
 <p align="center">
