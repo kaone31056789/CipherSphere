@@ -7,6 +7,30 @@ A futuristic, military-grade encryption platform built with Flask, featuring adv
 ![Flask](https://img.shields.io/badge/Flask-2.3.3-red?style=for-the-badge&logo=flask)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
+## 📸 Screenshots
+
+<div align="center">
+
+### 🏠 Homepage
+![Homepage](screenshots/homepage.png)
+
+### 🔐 Encryption Interface
+![Encryption](screenshots/encryption.png)
+
+### 📊 Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### 🗄️ Vault
+![Vault](screenshots/vault.png)
+
+### 👤 Profile Management
+![Profile](screenshots/profile.png)
+
+### 🛡️ Admin Dashboard
+![Admin Dashboard](screenshots/admin_dashboard.png)
+
+</div>
+
 ## 🌟 Features
 
 ### 🔐 Encryption & Security

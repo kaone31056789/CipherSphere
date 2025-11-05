@@ -1,0 +1,1087 @@
+================================================================================
+                        CIPHERSPHERE PROJECT DOCUMENTATION
+                    Complete Technical & Functional Overview
+================================================================================
+
+PROJECT TITLE: CipherSphere - Military-Grade Encryption Platform
+VERSION: 1.0
+PROGRAMMING LANGUAGE: Python 3.13
+FRAMEWORK: Flask 2.3.3
+DATABASE: SQLite
+DEVELOPER: Parikshit
+GITHUB REPOSITORY: CipherSphere (kaone31056789)
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+CipherSphere is a futuristic, web-based encryption and decryption platform 
+built using Flask framework. It provides military-grade cryptographic security
+for both text messages and files with a modern cyberpunk-inspired user interface.
+
+PURPOSE:
+- Secure encryption and decryption of sensitive data
+- User authentication and profile management
+- Secure file storage vault system
+- File sharing between users with access controls
+- Administrative monitoring and management
+
+TARGET USERS:
+- Individuals requiring data security
+- Organizations needing encrypted file storage
+- Security professionals
+- System administrators
+
+================================================================================
+2. KEY FEATURES
+================================================================================
+
+2.1 ENCRYPTION & SECURITY
+--------------------------
+✓ Multiple Encryption Algorithms:
+  - AES-256 (Advanced Encryption Standard)
+  - RSA-4096 (Rivest-Shamir-Adleman)
+  - Fernet Symmetric Encryption
+  
+✓ Text Encryption: Secure any text message with user-defined keys
+✓ File Encryption: Support for files up to 50MB
+✓ Password Security: Bcrypt-based hashing with automatic salting
+✓ Security Questions: Additional password recovery layer
+✓ Session Management: Secure user sessions with Flask-Login
+
+2.2 SUPPORTED FILE TYPES
+-------------------------
+Documents: txt, pdf, doc, docx, xls, xlsx, ppt, pptx
+Images: jpg, jpeg, png, gif, bmp, webp, svg
+Archives: zip, rar, 7z, tar, gz
+Media: mp3, wav, mp4, avi, mkv, mov
+Code: json, xml, csv, log, md, py, js, css, html
+
+2.3 USER MANAGEMENT
+-------------------
+✓ User Registration & Login System
+✓ Profile Management with Picture Upload
+✓ Password Change Functionality
+✓ Forgot Password with Security Questions
+✓ User Activity Tracking
+✓ Role-Based Access Control (Admin/User)
+
+2.4 FILE VAULT SYSTEM
+---------------------
+✓ Personal Encrypted File Storage
+✓ File Upload and Download
+✓ File Deletion with Confirmation
+✓ Security Key Management
+✓ File Metadata Tracking (size, date, algorithm)
+✓ Favorites System
+
+2.5 FILE SHARING
+----------------
+✓ Share Encrypted Files Between Users
+✓ Access Level Controls (View/Download/Decrypt)
+✓ Expiration Time Settings
+✓ Share Revocation
+✓ Share Extension
+
+2.6 ADMIN DASHBOARD
+-------------------
+✓ System Statistics & Analytics
+✓ User Management (Create, Delete, Toggle Admin)
+✓ File Management & Monitoring
+✓ Activity Logs & Audit Trail
+✓ System Information Display
+✓ Database Statistics
+
+2.7 USER INTERFACE
+------------------
+✓ Cyberpunk-Inspired Design
+✓ Tesla Theme with Neon Effects
+✓ Responsive Mobile-Friendly Layout
+✓ Dark Mode Interface
+✓ Interactive Animations
+✓ Real-Time Notifications
+
+================================================================================
+3. TECHNICAL ARCHITECTURE
+================================================================================
+
+3.1 PROJECT STRUCTURE
+---------------------
+ciphersphere/
+│
+├── app.py                      # Main Flask application (1000+ lines)
+├── requirements.txt            # Python dependencies
+├── README.md                   # Project documentation
+│
+├── ciphersphere/              # Main application package
+│   ├── encryption.py          # Encryption algorithms & utilities
+│   ├── forms.py              # WTForms for form handling
+│   ├── models.py             # SQLAlchemy database models
+│   │
+│   ├── static/               # Static assets
+│   │   ├── css/              # Stylesheets (4 theme files)
+│   │   ├── js/               # JavaScript (animations, main logic)
+│   │   └── images/           # Image assets
+│   │
+│   ├── templates/            # Jinja2 HTML templates (20+ files)
+│   │   ├── base.html         # Base template
+│   │   ├── index.html        # Homepage
+│   │   ├── login.html        # Login page
+│   │   ├── register.html     # Registration
+│   │   ├── dashboard.html    # User dashboard
+│   │   ├── encrypt.html      # Encryption interface
+│   │   ├── decrypt.html      # Decryption interface
+│   │   ├── vault.html        # File vault
+│   │   ├── profile.html      # User profile
+│   │   ├── shared_files.html # Shared files
+│   │   └── admin/            # Admin templates (6 files)
+│   │
+│   ├── uploads/              # User uploaded files
+│   │   ├── profiles/         # Profile pictures
+│   │   └── temp/             # Temporary decrypted files
+│   └── vault/                # Encrypted file storage
+│
+└── instance/                 # Instance-specific files
+    └── ciphersphere.db       # SQLite database
+
+3.2 TECHNOLOGY STACK
+--------------------
+Backend Framework:
+- Flask 2.3.3 (Python web framework)
+- Flask-SQLAlchemy 3.0.5 (ORM)
+- Flask-Login 0.6.3 (User session management)
+- Flask-WTF 1.1.1 (Form handling)
+
+Database:
+- SQLite (Development database)
+- SQLAlchemy ORM
+
+Security Libraries:
+- cryptography 41.0.4 (AES, Fernet)
+- pycryptodome 3.18.0 (RSA encryption)
+- bcrypt 4.0.1 (Password hashing)
+
+Additional Libraries:
+- Werkzeug 2.3.7 (WSGI utilities)
+- WTForms 3.0.1 (Form validation)
+- Pillow 10.0.0 (Image processing)
+- psutil 5.9.6 (System monitoring)
+- email-validator 2.0.0 (Email validation)
+
+Frontend:
+- HTML5, CSS3, JavaScript
+- Bootstrap (CSS framework)
+- Font Awesome (Icons)
+- Custom animations and effects
+
+3.3 DATABASE SCHEMA
+-------------------
+Tables:
+1. User
+   - id, username, full_name, email, password_hash
+   - security_question, security_answer_hash
+   - is_admin, profile_picture, created_at
+
+2. EncryptedFile
+   - id, user_id, filename, original_filename
+   - algorithm, file_size, is_text
+   - created_at
+
+3. ActivityLog
+   - id, user_id, action, timestamp
+
+4. SharedFile
+   - id, owner_id, shared_with_user_id
+   - file_id, content, content_type
+   - encryption_key, algorithm
+   - access_level, expires_at, shared_at
+
+================================================================================
+4. ENCRYPTION ALGORITHMS DETAILS
+================================================================================
+
+4.1 AES (Advanced Encryption Standard)
+---------------------------------------
+Type: Symmetric encryption
+Key Size: 256-bit
+Mode: CBC (Cipher Block Chaining) with PKCS7 padding
+Features:
+- Fast encryption for large files
+- Industry-standard security
+- Efficient memory usage
+
+Use Case: General-purpose file and text encryption
+
+4.2 RSA (Rivest-Shamir-Adleman)
+--------------------------------
+Type: Asymmetric encryption
+Key Size: 4096-bit
+Padding: OAEP with SHA-256
+Features:
+- Public-private key pairs
+- Secure key exchange
+- Digital signatures capability
+
+Use Case: Small data encryption, key exchange
+
+4.3 Fernet
+----------
+Type: Symmetric encryption
+Based on: AES-128 with HMAC-SHA256
+Features:
+- Built-in timestamp verification
+- Message authentication
+- Data integrity checking
+
+Use Case: General-purpose encryption with integrity verification
+
+================================================================================
+5. CORE FUNCTIONALITIES
+================================================================================
+
+5.1 USER AUTHENTICATION FLOW
+-----------------------------
+1. Registration:
+   - User provides username, full name, email, password
+   - Sets security question and answer
+   - Password hashed with bcrypt
+   - User created in database
+   - Activity logged
+
+2. Login:
+   - User provides username and password
+   - Password verified against hash
+   - Session created with Flask-Login
+   - Redirects to dashboard or admin panel
+   - Login activity logged
+
+3. Password Recovery:
+   - User enters username
+   - Answers security question
+   - If correct, can reset password
+   - Password updated in database
+   - Recovery activity logged
+
+5.2 ENCRYPTION WORKFLOW
+-----------------------
+Text Encryption:
+1. User enters text content
+2. Selects encryption algorithm (AES/RSA/Fernet)
+3. Provides or generates encryption key
+4. Option to save to vault
+5. Encrypted content displayed with download option
+6. Activity logged
+
+File Encryption:
+1. User uploads file (max 50MB)
+2. File type validated against allowed extensions
+3. Selects encryption algorithm
+4. Provides or generates encryption key
+5. File encrypted with metadata preservation
+6. Option to save to vault or download immediately
+7. Original file deleted from temp storage
+8. Activity logged
+
+5.3 DECRYPTION WORKFLOW
+-----------------------
+Text Decryption:
+1. User pastes encrypted text
+2. Selects algorithm used for encryption
+3. Provides decryption key
+4. Text decrypted and displayed
+5. Activity logged
+
+File Decryption:
+1. User uploads encrypted file
+2. Selects algorithm used
+3. Provides decryption key
+4. File decrypted with metadata extraction
+5. Original filename and format restored
+6. Decrypted file available for download
+7. Activity logged
+
+5.4 VAULT OPERATIONS
+--------------------
+Upload to Vault:
+- File encrypted during upload process
+- Stored with unique identifier
+- Metadata saved to database
+- File size and algorithm tracked
+
+Download from Vault:
+- Encrypted file retrieved
+- Sent to user with .encrypted extension
+- Activity logged
+
+Decrypt from Vault:
+- User provides decryption key
+- File decrypted in-memory
+- Original format restored
+- Temporary download link created
+
+Delete from Vault:
+- User confirmation required
+- File deleted from filesystem
+- Database record removed
+- Activity logged
+
+5.5 FILE SHARING SYSTEM
+-----------------------
+Share File:
+1. Owner selects file to share
+2. Enters recipient's email
+3. Sets access level (View/Download/Decrypt)
+4. Sets expiration period (days)
+5. Share record created in database
+6. Both users receive activity logs
+
+Access Shared File:
+1. Recipient views shared files
+2. Can view/download based on permissions
+3. If decrypt permission, can retrieve key
+4. Activity tracked
+
+Manage Shares:
+1. Owner can view all shares
+2. Can revoke access anytime
+3. Can extend expiration
+4. Auto-expiration enforcement
+
+================================================================================
+6. ADMIN FEATURES
+================================================================================
+
+6.1 DASHBOARD OVERVIEW
+----------------------
+Displays:
+- Total users count
+- Total encrypted files
+- Today's new users
+- Today's new files
+- Active users (24 hours)
+- Active sessions
+- Recent activities (last 10)
+
+Real-time Statistics:
+- User registration trends
+- File encryption trends
+- System activity monitoring
+
+6.2 USER MANAGEMENT
+-------------------
+Features:
+✓ View all registered users
+✓ Create new users with admin privileges
+✓ Delete users (with file cleanup)
+✓ Toggle admin privileges
+✓ View user activity history
+✓ Monitor user file count
+
+Restrictions:
+- Cannot delete admin users
+- Cannot delete self
+
+6.3 FILE MANAGEMENT
+-------------------
+Features:
+✓ View all encrypted files across users
+✓ File statistics by algorithm
+✓ Total storage usage tracking
+✓ Delete files if needed
+✓ View file metadata
+
+Analytics:
+- Files by encryption algorithm
+- Storage distribution
+- User upload patterns
+
+6.4 ACTIVITY MONITORING
+-----------------------
+Features:
+✓ Complete activity log with pagination
+✓ User-wise activity tracking
+✓ Most active users list
+✓ Activity filtering and search
+✓ Timestamp tracking
+
+Logged Activities:
+- User registration/login/logout
+- File encryption/decryption
+- Vault operations
+- Share operations
+- Admin actions
+- Security events
+
+6.5 SYSTEM SETTINGS
+-------------------
+Displays:
+✓ Platform information
+✓ Architecture details
+✓ Processor information
+✓ RAM usage
+✓ CPU usage
+✓ Memory usage
+✓ Disk usage
+✓ Database statistics
+
+Database Stats:
+- Total users
+- Total files
+- Total activities
+- Total shares
+
+================================================================================
+7. SECURITY FEATURES
+================================================================================
+
+7.1 PASSWORD SECURITY
+---------------------
+- Bcrypt hashing algorithm
+- Automatic salt generation
+- Configurable work factor
+- No plain-text storage
+- Secure comparison
+
+7.2 SESSION SECURITY
+--------------------
+- Flask-Login session management
+- Secure session cookies
+- Auto-logout on browser close
+- Session hijacking prevention
+- CSRF token validation (configurable)
+
+7.3 FILE SECURITY
+-----------------
+- Secure filename handling with werkzeug
+- File type validation
+- Extension whitelist
+- File size limits (50MB)
+- Path traversal prevention
+- Temporary file cleanup
+
+7.4 INPUT VALIDATION
+--------------------
+- WTForms validation
+- Email format validation
+- Username uniqueness check
+- Password strength requirements
+- SQL injection prevention (SQLAlchemy)
+- XSS prevention (template auto-escaping)
+
+7.5 ENCRYPTION SECURITY
+-----------------------
+- Industry-standard algorithms
+- Secure random key generation
+- Metadata encryption
+- Secure key storage (user-managed)
+- No key logging or storage by system
+
+================================================================================
+8. API ENDPOINTS
+================================================================================
+
+8.1 AUTHENTICATION ENDPOINTS
+-----------------------------
+GET  /                      - Homepage
+GET  /register              - Registration form
+POST /register              - Process registration
+GET  /login                 - Login form
+POST /login                 - Process login
+GET  /logout                - Logout user
+GET  /forgot_password       - Password recovery form
+POST /forgot_password       - Process recovery request
+GET  /reset_password        - Password reset form
+POST /reset_password        - Process password reset
+
+8.2 DASHBOARD ENDPOINTS
+-----------------------
+GET  /dashboard             - User dashboard
+GET  /profile               - User profile
+POST /profile               - Update profile
+GET  /profile_picture/<file> - Serve profile pictures
+
+8.3 ENCRYPTION ENDPOINTS
+------------------------
+GET  /encrypt               - Encryption form
+POST /encrypt               - Process encryption
+GET  /decrypt               - Decryption form
+POST /decrypt               - Process decryption
+GET  /decrypt_simple        - Simple decryption interface
+POST /decrypt_simple        - Process simple decryption
+GET  /decrypt_new           - New decryption interface
+POST /decrypt_new           - Process new decryption
+
+8.4 DOWNLOAD ENDPOINTS
+----------------------
+POST /download_decrypted          - Download decrypted content
+POST /download_decrypted_temp     - Download temp decrypted file
+POST /download_encrypted_temp     - Download encrypted content
+GET  /download_encrypted_file/<id> - Download encrypted file
+
+8.5 VAULT ENDPOINTS
+-------------------
+GET  /vault                      - View vault
+GET  /vault/download/<id>        - Download encrypted file
+POST /vault/decrypt/<id>         - Decrypt vault file
+POST /vault/share/<id>           - Share file
+POST /vault/delete/<id>          - Delete file
+POST /vault/change-key/<id>      - Change encryption key
+
+8.6 SHARING ENDPOINTS
+---------------------
+POST /share_encrypted_data  - Share encrypted data
+GET  /shared_files          - View shared files
+GET  /view_shared/<id>      - View shared file details
+GET  /download_shared/<id>  - Download shared file
+GET  /get_shared_key/<id>   - Get decryption key
+POST /revoke_share/<id>     - Revoke share access
+POST /extend_share/<id>     - Extend share expiration
+
+8.7 ADMIN ENDPOINTS
+-------------------
+GET  /admin                         - Admin dashboard
+GET  /admin/users                   - User management
+GET  /admin/users/create            - Create user form
+POST /admin/users/create            - Process user creation
+POST /admin/users/<id>/delete       - Delete user
+POST /admin/users/<id>/toggle_admin - Toggle admin privileges
+GET  /admin/files                   - File management
+POST /admin/files/<id>/delete       - Delete file
+GET  /admin/activity                - Activity logs
+GET  /admin/settings                - System settings
+GET  /admin/api/stats               - Get statistics (JSON)
+
+8.8 UTILITY ENDPOINTS
+---------------------
+GET  /check_username                - Check username availability
+GET  /generate_security_key         - Generate encryption key
+GET  /test_download                 - Test download functionality
+GET  /test_download_file            - Test file download
+GET  /test_decrypt                  - Test decryption form
+POST /test_decrypt                  - Process test decryption
+GET  /test_upload                   - Test upload form
+POST /test_upload                   - Process test upload
+
+================================================================================
+9. CONFIGURATION
+================================================================================
+
+9.1 APPLICATION SETTINGS
+-------------------------
+SECRET_KEY: Randomly generated 32-byte token
+SQLALCHEMY_DATABASE_URI: sqlite:///ciphersphere.db
+SQLALCHEMY_TRACK_MODIFICATIONS: False
+UPLOAD_FOLDER: ciphersphere/uploads
+VAULT_FOLDER: ciphersphere/vault
+MAX_CONTENT_LENGTH: 52428800 (50MB)
+
+9.2 DEFAULT ADMIN CREDENTIALS
+------------------------------
+Username: admin
+Password: admin123
+Email: admin@ciphersphere.com
+Security Question: "What is the name of this system?"
+Security Answer: ciphersphere
+
+IMPORTANT: Change these credentials after first login!
+
+9.3 LOGGING CONFIGURATION
+--------------------------
+Level: INFO
+Format: Standard Python logging
+Outputs: Console (development)
+
+================================================================================
+10. INSTALLATION & DEPLOYMENT
+================================================================================
+
+10.1 PREREQUISITES
+------------------
+- Python 3.13 or higher
+- pip package manager
+- 100MB+ disk space
+- Modern web browser
+
+10.2 INSTALLATION STEPS
+-----------------------
+1. Clone/Download the project
+2. Create virtual environment (recommended):
+   python -m venv venv
+   venv\Scripts\activate (Windows)
+   source venv/bin/activate (Linux/Mac)
+
+3. Install dependencies:
+   pip install -r requirements.txt
+
+4. Run the application:
+   python app.py
+
+5. Access the application:
+   http://localhost:5000
+   or
+   http://127.0.0.1:5000
+
+10.3 FIRST-TIME SETUP
+---------------------
+1. Application auto-creates database on first run
+2. Admin user auto-created with default credentials
+3. Register additional users via web interface
+4. Configure admin settings as needed
+5. Change admin password immediately
+
+10.4 PRODUCTION DEPLOYMENT
+--------------------------
+For production use:
+1. Use production WSGI server (Gunicorn/uWSGI)
+2. Enable HTTPS with SSL certificate
+3. Use production database (PostgreSQL/MySQL)
+4. Set DEBUG=False
+5. Configure environment variables
+6. Set up proper logging
+7. Implement backup strategy
+8. Use reverse proxy (Nginx/Apache)
+
+================================================================================
+11. TESTING
+================================================================================
+
+11.1 TEST FILES INCLUDED
+------------------------
+- test_app_startup.py       # Application startup tests
+- test_decrypt.py           # Decryption functionality tests
+- test_decrypt_fix.py       # Decryption bug fix tests
+- test_decrypt_workflow.py  # Complete decrypt workflow tests
+- test_download.py          # Download functionality tests
+- test_download_direct.py   # Direct download tests
+- test_download_fix.py      # Download bug fix tests
+- test_format_preservation.py # Format preservation tests
+- test_routes.py            # Route testing
+- test_upload.html          # Upload interface test
+- debug_decrypt.py          # Decryption debugging
+- debug_files.py            # File operation debugging
+- check_admin.py            # Admin verification
+
+11.2 TESTING APPROACH
+---------------------
+Manual Testing:
+- User registration and login
+- File encryption/decryption
+- Vault operations
+- Sharing functionality
+- Admin operations
+
+Automated Testing:
+- Unit tests for encryption functions
+- Route testing
+- Form validation testing
+- Database operations testing
+
+11.3 TEST SCENARIOS
+-------------------
+1. User Management:
+   ✓ Register new user
+   ✓ Login with valid credentials
+   ✓ Login with invalid credentials
+   ✓ Password recovery
+   ✓ Profile update
+
+2. Encryption:
+   ✓ Encrypt text with AES
+   ✓ Encrypt text with RSA
+   ✓ Encrypt text with Fernet
+   ✓ Encrypt various file types
+   ✓ Encryption key generation
+
+3. Decryption:
+   ✓ Decrypt text with correct key
+   ✓ Decrypt file with correct key
+   ✓ Decrypt with wrong key (error handling)
+   ✓ Format preservation
+
+4. Vault:
+   ✓ Upload to vault
+   ✓ Download from vault
+   ✓ Delete from vault
+   ✓ Decrypt from vault
+
+5. Sharing:
+   ✓ Share file with user
+   ✓ Access shared file
+   ✓ Revoke access
+   ✓ Expiration handling
+
+6. Admin:
+   ✓ Create user
+   ✓ Delete user
+   ✓ View statistics
+   ✓ Monitor activities
+
+================================================================================
+12. USER INTERFACE DESIGN
+================================================================================
+
+12.1 THEME DESCRIPTION
+----------------------
+Primary Theme: Cyberpunk/Tesla-inspired
+Color Scheme:
+- Background: Dark navy/black (#0a0e27, #000000)
+- Primary: Electric blue (#00d4ff, #3399ff)
+- Accent: Neon cyan (#00ffff)
+- Success: Green (#00ff88)
+- Error: Red (#ff4444)
+- Warning: Orange (#ffa500)
+
+Typography:
+- Headers: Bold, modern sans-serif
+- Body: Clean, readable sans-serif
+- Code: Monospace for keys/encrypted data
+
+12.2 UI COMPONENTS
+------------------
+Navigation:
+- Responsive navbar with user menu
+- Breadcrumb navigation
+- Sidebar for admin panel
+
+Forms:
+- Modern input fields with floating labels
+- Validation feedback
+- File upload drag-and-drop
+- Toggle switches for options
+
+Cards:
+- Glass-morphism effect
+- Gradient borders
+- Hover animations
+- Icon integration
+
+Buttons:
+- Gradient backgrounds
+- Hover effects
+- Loading states
+- Icon buttons
+
+Tables:
+- Sortable columns
+- Pagination
+- Search/filter
+- Action buttons
+
+Modals:
+- Confirmation dialogs
+- Information displays
+- Form overlays
+
+12.3 ANIMATIONS
+---------------
+- Fade-in on page load
+- Slide transitions
+- Button hover effects
+- Card lift on hover
+- Loading spinners
+- Success/error notifications
+- Smooth scrolling
+
+12.4 RESPONSIVE DESIGN
+----------------------
+Breakpoints:
+- Desktop: 1200px+
+- Tablet: 768px - 1199px
+- Mobile: < 768px
+
+Mobile Optimizations:
+- Hamburger menu
+- Touch-friendly buttons
+- Responsive tables
+- Optimized images
+- Reduced animations
+
+================================================================================
+13. ERROR HANDLING
+================================================================================
+
+13.1 USER-FACING ERRORS
+-----------------------
+- Form validation errors with specific messages
+- Flash messages for operations (success/failure)
+- Friendly error pages
+- Redirect on unauthorized access
+- Session expiry notifications
+
+13.2 SERVER ERRORS
+------------------
+- Try-catch blocks for critical operations
+- Database rollback on errors
+- File cleanup on failures
+- Logging of exceptions
+- Graceful degradation
+
+13.3 COMMON ERROR SCENARIOS
+---------------------------
+1. Invalid login credentials
+   → Display: "Invalid username or password"
+
+2. File too large
+   → Display: "File too large. Maximum size is 50MB"
+
+3. Wrong decryption key
+   → Display: "Decryption failed: Invalid key"
+
+4. File not found
+   → Display: "File not found"
+
+5. Unauthorized access
+   → Redirect to login with message
+
+6. Expired share
+   → Display: "This shared file has expired"
+
+================================================================================
+14. PERFORMANCE CONSIDERATIONS
+================================================================================
+
+14.1 OPTIMIZATION TECHNIQUES
+----------------------------
+✓ Database query optimization with SQLAlchemy
+✓ Pagination for large datasets
+✓ Lazy loading of templates
+✓ Efficient file handling with streams
+✓ Temporary file cleanup
+✓ Session management
+✓ CSS/JS minification (production)
+✓ Image optimization
+
+14.2 SCALABILITY
+----------------
+Current Limitations:
+- SQLite (single-user write)
+- File storage on local disk
+- No caching layer
+- Synchronous operations
+
+Future Improvements:
+- Migration to PostgreSQL/MySQL
+- Cloud storage integration (S3)
+- Redis caching
+- Celery for background tasks
+- Load balancing
+- CDN for static assets
+
+14.3 RESOURCE USAGE
+-------------------
+Memory:
+- Base: ~50-100MB
+- Per file encryption: ~2x file size
+- Database: Grows with users/files
+
+Disk:
+- Application: ~5MB
+- Dependencies: ~100MB
+- Database: Variable
+- Vault: Variable (user files)
+
+CPU:
+- Encryption: Moderate
+- File operations: Low-Moderate
+- Database: Low
+
+================================================================================
+15. FUTURE ENHANCEMENTS
+================================================================================
+
+15.1 PLANNED FEATURES
+---------------------
+Priority 1 (High):
+□ Two-Factor Authentication (2FA)
+□ Email verification for registration
+□ Email notifications for shares
+□ Bulk file operations
+□ Advanced search and filters
+
+Priority 2 (Medium):
+□ REST API with token authentication
+□ File versioning system
+□ Collaborative encryption
+□ Mobile application (iOS/Android)
+□ Browser extensions
+
+Priority 3 (Low):
+□ Blockchain audit trail
+□ Integration with cloud storage
+□ Real-time notifications (WebSocket)
+□ Video/audio encryption
+□ Encrypted chat system
+
+15.2 IMPROVEMENTS
+-----------------
+□ Enhanced tablet responsiveness
+□ More granular file sharing permissions
+□ Encryption algorithm comparison tool
+□ Key management system
+□ Automated backups
+□ Multi-language support
+□ Accessibility improvements
+□ Dark/Light theme toggle
+□ Custom branding options
+
+================================================================================
+16. KNOWN ISSUES & LIMITATIONS
+================================================================================
+
+16.1 CURRENT LIMITATIONS
+------------------------
+1. File Size: Maximum 50MB per file
+2. Concurrent Users: Limited by SQLite
+3. File Format: Some formats may lose metadata
+4. Browser Compatibility: Modern browsers only
+5. Mobile: Optimized for mobile but not native app
+
+16.2 KNOWN BUGS
+---------------
+None critical at this time.
+
+Minor Issues:
+- Large file uploads may timeout on slow connections
+- Tablet landscape mode needs UI adjustment
+- Some error messages could be more descriptive
+
+16.3 WORKAROUNDS
+----------------
+1. Large files: Split into smaller chunks
+2. Timeout: Increase server timeout settings
+3. Compatibility: Use Chrome/Firefox/Edge
+
+================================================================================
+17. MAINTENANCE & SUPPORT
+================================================================================
+
+17.1 REGULAR MAINTENANCE
+------------------------
+Daily:
+- Monitor error logs
+- Check disk space
+- Verify backups
+
+Weekly:
+- Review activity logs
+- Update dependencies (security patches)
+- Database optimization
+
+Monthly:
+- Security audit
+- Performance review
+- User feedback review
+
+17.2 BACKUP STRATEGY
+--------------------
+Database:
+- Daily automated backups
+- Weekly full backups
+- Monthly archives
+
+Files:
+- Incremental backups daily
+- Full backup weekly
+- Off-site backup monthly
+
+17.3 UPDATE PROCEDURE
+---------------------
+1. Backup database and files
+2. Test updates in staging
+3. Schedule maintenance window
+4. Deploy updates
+5. Verify functionality
+6. Monitor for issues
+
+================================================================================
+18. LICENSING & CREDITS
+================================================================================
+
+18.1 LICENSE
+------------
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+18.2 ACKNOWLEDGMENTS
+--------------------
+Frameworks & Libraries:
+- Flask (Pallets Projects)
+- SQLAlchemy
+- Cryptography.io
+- Bootstrap
+- Font Awesome
+
+Inspiration:
+- Modern cyberpunk aesthetics
+- Tesla design philosophy
+- Military-grade security standards
+
+================================================================================
+19. CONTACT & SUPPORT
+================================================================================
+
+GitHub Repository: https://github.com/kaone31056789/CipherSphere
+Developer: Parikshit
+Project Status: Active Development
+Last Updated: November 2025
+
+For Issues:
+- GitHub Issues: Report bugs and feature requests
+- Pull Requests: Contributions welcome
+
+Documentation:
+- README.md: Quick start guide
+- This file: Complete documentation
+- Code comments: Inline documentation
+
+================================================================================
+20. CONCLUSION
+================================================================================
+
+CipherSphere represents a comprehensive solution for secure data encryption
+and management. Built with modern web technologies and industry-standard
+cryptographic algorithms, it provides a user-friendly interface for complex
+security operations.
+
+The platform demonstrates:
+✓ Full-stack web development skills
+✓ Security best practices implementation
+✓ Database design and management
+✓ User experience design
+✓ Modern UI/UX implementation
+✓ RESTful API design
+✓ Authentication and authorization
+✓ File handling and storage
+✓ Error handling and validation
+✓ Documentation and testing
+
+Project Statistics:
+- Total Lines of Code: ~3000+
+- Python Files: 15+
+- HTML Templates: 20+
+- CSS Files: 4
+- JavaScript Files: 2
+- Database Tables: 4
+- API Endpoints: 40+
+- Features Implemented: 30+
+
+This platform serves as both a practical security tool and a demonstration
+of full-stack development capabilities with a focus on security, usability,
+and modern design principles.
+
+================================================================================
+                            END OF DOCUMENTATION
+================================================================================
+Generated: November 5, 2025
+Version: 1.0
+Document Type: Complete Technical Documentation
+Format: Plain Text
