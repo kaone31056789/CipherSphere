@@ -1,178 +1,92 @@
-{% extends "base.html" %}
-
-{% block title %}Welcome to CipherSphere{% endblock %}
-
+{% extends 'base.html' %}
+{% block title %}Secure data workspace - CipherSphere{% endblock %}
+{% block description %}Encrypt sensitive text and files, retain custody of your keys, and control protected data from a hardened workspace.{% endblock %}
+{% block body_class %}app-page landing-page cyber-landing{% endblock %}
 {% block content %}
-<div class="cyber-hero">
-    <div class="row align-items-center min-vh-100">
-        <div class="col-lg-6">
-            <div class="hero-content">
-                <h1 class="cyber-title mb-4">
-                    <span class="glitch-text" data-text="CipherSphere">CipherSphere</span>
-                </h1>
-                <p class="cyber-subtitle mb-4">
-                    Next-generation encryption platform with military-grade security
-                </p>
-                <p class="cyber-description mb-5">
-                    Experience the future of data protection with our advanced encryption algorithms,
-                    intuitive interface, and cutting-edge security features. Your data, our protection.
-                </p>
-                
-                <div class="hero-buttons">
-                    <a href="{{ url_for('register') }}" class="btn cyber-btn-primary me-3">
-                        <i class="fas fa-user-plus"></i> Get Started
-                    </a>
-                    <a href="{{ url_for('login') }}" class="btn cyber-btn-secondary">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-6">
-            <div class="hero-visual">
-                <div class="cyber-orb">
-                    <div class="orb-core">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div class="orb-ring ring-1"></div>
-                    <div class="orb-ring ring-2"></div>
-                    <div class="orb-ring ring-3"></div>
-                </div>
-            </div>
-        </div>
+<section class="hero landing-hero landing-hero--cyber" aria-labelledby="hero-title">
+  <div class="hero-copy landing-hero__copy motion-reveal">
+    <p class="eyebrow hero-signal"><span class="hero-signal__marker signal-blink" aria-hidden="true"></span>Cryptographic operations platform</p>
+    <h1 id="hero-title">Put sensitive data behind a real perimeter.</h1>
+    <p class="lede">Encrypt text and files, retain custody of the key, and control every protected asset from a hardened private workspace.</p>
+    <div class="actions hero-actions"><a class="button button--primary button--signal" href="{{ url_for('register') }}"><span class="button__marker" aria-hidden="true"></span>Create account</a><a class="button button--secondary button--outline" href="{{ url_for('login') }}">Sign in</a></div>
+    <ul class="hero-capabilities" aria-label="Core workspace capabilities">
+      <li><span class="protocol-tag protocol-tag--encryption" aria-hidden="true"></span><span>Authenticated encryption</span></li>
+      <li><span class="protocol-tag protocol-tag--custody" aria-hidden="true"></span><span>User-controlled keys</span></li>
+      <li><span class="protocol-tag protocol-tag--oversight" aria-hidden="true"></span><span>Role-based oversight</span></li>
+    </ul>
+  </div>
+  <aside class="security-plate perimeter-console cyber-panel motion-reveal" aria-labelledby="plate-title">
+    <div class="perimeter-console__visual" aria-hidden="true">
+      <canvas class="cipher-canvas" data-cipher-animation width="720" height="720"></canvas>
+      <span class="cipher-ring cipher-ring--outer motion-scan"></span>
+      <span class="cipher-ring cipher-ring--inner"></span>
+      <span class="cipher-core signal-blink"></span>
+      <span class="console-reticle"></span>
+      <span class="material-sheet material-sheet--one"></span>
+      <span class="material-sheet material-sheet--two"></span>
+      <span class="material-sheet material-sheet--three"></span>
+      <span class="optic-core"><span class="optic-core__lens"></span></span>
     </div>
-</div>
+    <div class="security-plate__content perimeter-console__content">
+      <p class="section-kicker">Protocol matrix</p>
+      <h2 id="plate-title">Security controls</h2>
+      <dl class="spec-list spec-list--console">
+        <div><dt>Data types</dt><dd>Text and files</dd></div>
+        <div><dt>Key custody</dt><dd>User controlled</dd></div>
+        <div><dt>Workspace</dt><dd>Personal vault</dd></div>
+        <div><dt>Oversight</dt><dd>Role-based admin</dd></div>
+      </dl>
+    </div>
+  </aside>
+</section>
 
-<!-- Features Section -->
-<div class="features-section py-5">
-    <div class="container">
-        <h2 class="text-center cyber-section-title mb-5">Advanced Security Features</h2>
-        
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="cyber-feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h4>Multiple Algorithms</h4>
-                    <p>Choose from AES, RSA, and Fernet encryption algorithms for optimal security.</p>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="cyber-feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                    </div>
-                    <h4>File & Text Encryption</h4>
-                    <p>Encrypt both text content and files with seamless upload and download capabilities.</p>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="cyber-feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-share-alt"></i>
-                    </div>
-                    <h4>Secure Sharing</h4>
-                    <p>Share encrypted files securely with other users through our advanced sharing system.</p>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="cyber-feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-database"></i>
-                    </div>
-                    <h4>Personal Vault</h4>
-                    <p>Store your encrypted files safely in your personal digital vault with easy access.</p>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="cyber-feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h4>Activity Tracking</h4>
-                    <p>Monitor all your encryption activities with detailed logs and analytics.</p>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="cyber-feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-user-shield"></i>
-                    </div>
-                    <h4>Admin Control</h4>
-                    <p>Comprehensive admin dashboard for user management and system monitoring.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<section class="protocol-status cyber-panel" aria-labelledby="protocol-status-title">
+  <div class="protocol-status__heading"><p class="section-kicker">System posture</p><h2 id="protocol-status-title">Protocol status</h2></div>
+  <dl class="protocol-status__list">
+    <div><dt>Encryption core</dt><dd><span class="status-marker" aria-hidden="true"></span>AES-256-GCM</dd></div>
+    <div><dt>Key derivation</dt><dd><span class="status-marker" aria-hidden="true"></span>PBKDF2 · 600K</dd></div>
+    <div><dt>Identity layer</dt><dd><span class="status-marker" aria-hidden="true"></span>Supabase Auth</dd></div>
+    <div><dt>Access policy</dt><dd><span class="status-marker" aria-hidden="true"></span>Role enforced</dd></div>
+  </dl>
+</section>
 
-<!-- Algorithm Comparison -->
-<div class="algorithm-section py-5">
-    <div class="container">
-        <h2 class="text-center cyber-section-title mb-5">Encryption Algorithms</h2>
-        
-        <div class="row g-4">
-            <div class="col-lg-4">
-                <div class="algorithm-card">
-                    <div class="algorithm-header">
-                        <i class="fas fa-key"></i>
-                        <h3>AES</h3>
-                    </div>
-                    <div class="algorithm-body">
-                        <p><strong>Advanced Encryption Standard</strong></p>
-                        <ul>
-                            <li>256-bit encryption</li>
-                            <li>Industry standard</li>
-                            <li>Fast performance</li>
-                            <li>Symmetric encryption</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-4">
-                <div class="algorithm-card">
-                    <div class="algorithm-header">
-                        <i class="fas fa-shield-alt"></i>
-                        <h3>Fernet</h3>
-                    </div>
-                    <div class="algorithm-body">
-                        <p><strong>High-level Symmetric Encryption</strong></p>
-                        <ul>
-                            <li>Built-in authentication</li>
-                            <li>Secure by design</li>
-                            <li>Easy implementation</li>
-                            <li>Python optimized</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-4">
-                <div class="algorithm-card">
-                    <div class="algorithm-header">
-                        <i class="fas fa-exchange-alt"></i>
-                        <h3>RSA</h3>
-                    </div>
-                    <div class="algorithm-body">
-                        <p><strong>Asymmetric Encryption</strong></p>
-                        <ul>
-                            <li>2048-bit keys</li>
-                            <li>Public-key cryptography</li>
-                            <li>Secure key exchange</li>
-                            <li>Digital signatures</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<section class="content-section security-perimeter security-perimeter--asymmetric" aria-labelledby="security-perimeter-title">
+  <div class="security-perimeter__copy motion-reveal">
+    <p class="eyebrow">Enforced separation</p>
+    <h2 id="security-perimeter-title">The ciphertext and its key never share a trust boundary.</h2>
+    <p class="lede">CipherSphere keeps protection steps explicit: encrypt the payload, take custody of the key, and release plaintext only after integrity verification.</p>
+    <dl class="perimeter-facts">
+      <div><dt>Payload state</dt><dd>Encrypted at rest</dd></div>
+      <div><dt>Key handling</dt><dd>Kept separately</dd></div>
+      <div><dt>Release condition</dt><dd>Integrity verified</dd></div>
+    </dl>
+  </div>
+  <div class="perimeter-terminal cyber-panel motion-reveal" aria-labelledby="perimeter-terminal-title">
+    <div class="terminal-chrome" aria-hidden="true"><span></span><span></span><span></span></div>
+    <p class="terminal-path">CSPH://PERIMETER/TRACE</p>
+    <h3 id="perimeter-terminal-title">Enforcement trace</h3>
+    <ol class="terminal-trace">
+      <li><span class="trace-index" aria-hidden="true">01</span><div><strong>Payload staged</strong><span>Source data remains isolated from vault records.</span></div></li>
+      <li><span class="trace-index" aria-hidden="true">02</span><div><strong>Envelope sealed</strong><span>Authenticated encryption binds content and metadata.</span></div></li>
+      <li><span class="trace-index" aria-hidden="true">03</span><div><strong>Custody transferred</strong><span>The encryption key remains under user control.</span></div></li>
+      <li><span class="trace-index" aria-hidden="true">04</span><div><strong>Integrity enforced</strong><span>Modified ciphertext is rejected before release.</span></div></li>
+    </ol>
+  </div>
+</section>
+
+<section class="content-section workflow-section motion-reveal" aria-labelledby="workflow-title">
+  <div class="section-intro"><p class="eyebrow">Operational sequence</p><h2 id="workflow-title">A controlled protection workflow</h2><p class="lede">Each stage has one purpose, one owner, and a clear security boundary.</p></div>
+  <div class="feature-grid feature-grid--cyber motion-stagger">
+    <article class="feature-card feature-card--encrypt cyber-panel motion-reveal"><span class="feature-card__index" aria-hidden="true">01</span><span class="feature-card__trace" aria-hidden="true"></span><h3>Encrypt</h3><p>Choose an algorithm, provide data, and generate a protected result with a key you can store separately.</p></article>
+    <article class="feature-card feature-card--control cyber-panel motion-reveal"><span class="feature-card__index" aria-hidden="true">02</span><span class="feature-card__trace" aria-hidden="true"></span><h3>Retain custody</h3><p>Save encrypted files to your vault and review the algorithm, size, owner, and creation date.</p></article>
+    <article class="feature-card feature-card--share cyber-panel motion-reveal"><span class="feature-card__index" aria-hidden="true">03</span><span class="feature-card__trace" aria-hidden="true"></span><h3>Authorize access</h3><p>Give a named user explicit permissions and an expiry instead of sending untracked copies.</p></article>
+    <article class="feature-card feature-card--recover cyber-panel motion-reveal"><span class="feature-card__index" aria-hidden="true">04</span><span class="feature-card__trace" aria-hidden="true"></span><h3>Verify and recover</h3><p>Supply the protected data and matching key, then copy text or download the restored file.</p></article>
+  </div>
+</section>
+
+<section class="content-section landing-cta landing-cta--cyber cyber-panel motion-reveal" aria-labelledby="landing-cta-title">
+  <span class="landing-cta__grid" aria-hidden="true"></span>
+  <div class="landing-cta__copy"><p class="eyebrow">Initialize workspace</p><h2 id="landing-cta-title">Control the data before it leaves your hands.</h2><p>Create a private workspace and generate your first authenticated encrypted asset.</p></div>
+  <div class="actions landing-cta__actions"><a class="button button--primary button--signal" href="{{ url_for('register') }}">Create account</a><a class="button button--quiet" href="{{ url_for('login') }}">I already have an account</a></div>
+</section>
 {% endblock %}

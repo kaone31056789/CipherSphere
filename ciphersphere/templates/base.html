@@ -1,209 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="{{ page_lang|default('en') }}" data-appearance="cipher-noir">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}CipherSphere{% endblock %}</title>
-    
-    <!-- CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome with multiple CDN fallbacks -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <!-- Alternative Font Awesome CDN -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.5.1/css/all.css" crossorigin="anonymous" />
-    
-    <!-- Font Awesome Kit (if available) -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    
-    <!-- JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="{% block description %}Encrypt, decrypt, store, and share sensitive data with CipherSphere.{% endblock %}">
+  <title>{% block title %}CipherSphere{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/mark.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/cipher-animation.js') }}" defer></script>
 </head>
-<body class="cyber-body">
-    <!-- Animated Background -->
-    <div class="cyber-bg">
-        <div class="cyber-grid"></div>
-        <div class="cyber-particles"></div>
-    </div>
-
-    <!-- Navigation -->
-    {% if current_user.is_authenticated %}
-    <nav class="navbar navbar-expand-lg cyber-navbar">
-        <div class="container">
-            <a class="navbar-brand cyber-brand" href="{{ url_for('dashboard') }}">
-                <i class="fas fa-shield-alt"></i> CipherSphere
+{% set endpoint = request.endpoint|default('', true) %}
+{% set is_admin_console = current_user.is_authenticated and current_user.is_admin and endpoint.startswith('admin_') %}
+<body class="{% block body_class %}app-page{% endblock %}{% if is_admin_console %} admin-console{% endif %}">
+  <div class="cyber-backdrop" aria-hidden="true">
+    <span class="cyber-grid"></span>
+    <span class="cyber-beam cyber-beam--primary motion-scan"></span>
+    <span class="cyber-beam cyber-beam--secondary motion-scan motion-scan--delayed"></span>
+    <span class="cyber-vignette"></span>
+    <span class="cyber-noise"></span>
+  </div>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header cyber-header motion-reveal">
+    <div class="shell header-inner">
+      <a class="brand brand--cyber" href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('index') }}" aria-label="CipherSphere home">
+        <span class="brand-mark" aria-hidden="true"><img class="brand-logo" src="{{ url_for('static', filename='img/mark.svg') }}" alt="" width="36" height="36"></span>
+        <span class="brand-copy"><span class="brand-name">CipherSphere</span><span class="brand-tagline" aria-hidden="true">Encryption console</span></span>
+      </a>
+      <button class="nav-toggle cyber-control" type="button" aria-expanded="false" aria-controls="primary-navigation"><span class="nav-toggle__icon" aria-hidden="true"><span></span><span></span></span><span>Navigation</span></button>
+      <nav id="primary-navigation" class="site-nav cyber-nav" aria-label="Primary navigation">
+        <div class="task-links">
+          {% if current_user.is_authenticated %}
+            <a class="nav-link nav-link--dashboard" href="{{ url_for('dashboard') }}" {% if endpoint == 'dashboard' %}aria-current="page"{% endif %}><span class="nav-link__glow" aria-hidden="true"></span><span>Dashboard</span></a>
+            <a class="nav-link nav-link--encrypt" href="{{ url_for('encrypt') }}" {% if endpoint == 'encrypt' %}aria-current="page"{% endif %}><span class="nav-link__glow" aria-hidden="true"></span><span>Encrypt</span></a>
+            <a class="nav-link nav-link--decrypt" href="{{ url_for('decrypt') }}" {% if endpoint == 'decrypt' %}aria-current="page"{% endif %}><span class="nav-link__glow" aria-hidden="true"></span><span>Decrypt</span></a>
+            <a class="nav-link nav-link--vault" href="{{ url_for('vault') }}" {% if endpoint == 'vault' %}aria-current="page"{% endif %}><span class="nav-link__glow" aria-hidden="true"></span><span>Vault</span></a>
+            <a class="nav-link nav-link--shared" href="{{ url_for('shared_files') }}" {% if endpoint == 'shared_files' %}aria-current="page"{% endif %}><span class="nav-link__glow" aria-hidden="true"></span><span>Shared</span></a>
+          {% else %}
+            <a class="nav-link nav-link--home" href="{{ url_for('index') }}" {% if endpoint == 'index' %}aria-current="page"{% endif %}><span class="nav-link__glow" aria-hidden="true"></span><span>Home</span></a>
+            <a class="nav-link nav-link--login" href="{{ url_for('login') }}" {% if endpoint == 'login' %}aria-current="page"{% endif %}><span class="nav-link__glow" aria-hidden="true"></span><span>Sign in</span></a>
+            <a class="nav-link nav-link--register" href="{{ url_for('register') }}" {% if endpoint == 'register' %}aria-current="page"{% endif %}><span class="nav-link__glow" aria-hidden="true"></span><span>Create account</span></a>
+          {% endif %}
+        </div>
+        <div class="identity-cluster">
+          {% if current_user.is_authenticated %}
+            {% set nav_display_name = current_user.full_name|default(current_user.username, true) %}
+            {% if current_user.is_admin %}<a class="nav-link nav-link--admin" href="{{ url_for('admin_dashboard') }}" {% if endpoint.startswith('admin_') %}aria-current="page"{% endif %}><span class="nav-link__glow" aria-hidden="true"></span><span>Admin console</span></a>{% endif %}
+            <a class="profile-chip" href="{{ url_for('profile') }}" {% if endpoint == 'profile' %}aria-current="page"{% endif %}>
+              <span class="profile-chip__avatar" aria-hidden="true">{% if current_user.avatar_filename|default('', true) %}<img src="{{ url_for('profile_avatar') }}" alt="" width="32" height="32">{% else %}<span class="profile-chip__initials">{{ nav_display_name[:2]|upper }}</span>{% endif %}</span>
+              <span class="profile-chip__label">Profile</span>
             </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link cyber-nav-link" href="{{ url_for('dashboard') }}">
-                            <i class="fas fa-tachometer-alt"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link cyber-nav-link" href="{{ url_for('encrypt') }}">
-                            <i class="fas fa-lock"></i> Encrypt
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link cyber-nav-link" href="{{ url_for('decrypt_simple') }}">
-                            <i class="fas fa-unlock"></i> Decrypt
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link cyber-nav-link" href="{{ url_for('vault') }}">
-                            <i class="fas fa-database"></i> Vault
-                        </a>
-                    </li>
-                    {% if current_user.is_admin %}
-                    <li class="nav-item">
-                        <a class="nav-link cyber-nav-link admin-link" href="{{ url_for('admin_dashboard') }}">
-                            <i class="fas fa-crown"></i> Admin
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link cyber-nav-link admin-toggle-btn" onclick="toggleAdminPanel()" id="adminToggle">
-                            <i class="fas fa-tools"></i> Quick Admin
-                        </button>
-                    </li>
-                    {% endif %}
-                </ul>
-                
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle cyber-nav-link" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle"></i> {{ current_user.username }}
-                        </a>
-                        <ul class="dropdown-menu cyber-dropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">
-                                <i class="fas fa-user-cog"></i> Profile
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </a></li>
-                        </ul>
-                    </li>
-                </ul>
+            <form class="nav-signout" action="{{ url_for('logout') }}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="nav-link nav-link--signout" type="submit"><span class="nav-link__glow" aria-hidden="true"></span><span>Sign out</span></button>
+            </form>
+          {% endif %}
+          <details class="appearance-picker" data-appearance-picker>
+            <summary class="appearance-picker__summary cyber-control"><span>Theme</span><span class="appearance-picker__current" data-appearance-current>Cipher Noir</span></summary>
+            <div class="appearance-picker__panel" role="group" aria-label="Choose interface theme">
+              <button class="appearance-choice" type="button" data-appearance-choice="cipher-noir" data-appearance-name="Cipher Noir" aria-pressed="true"><span class="appearance-swatch appearance-swatch--cipher-noir" aria-hidden="true"></span><span>Cipher Noir</span></button>
+              <button class="appearance-choice" type="button" data-appearance-choice="signal-atelier" data-appearance-name="Signal Atelier" aria-pressed="false"><span class="appearance-swatch appearance-swatch--signal-atelier" aria-hidden="true"></span><span>Signal Atelier</span></button>
             </div>
+          </details>
+          <button class="effects-toggle cyber-control" type="button" data-effects-toggle aria-pressed="false"><span class="effects-toggle__icon" aria-hidden="true"></span><span data-effects-label>Pause effects</span></button>
         </div>
-    </nav>
-    
-    <!-- Quick Admin Panel -->
-    {% if current_user.is_admin %}
-    <div class="quick-admin-panel" id="quickAdminPanel">
-        <div class="admin-panel-header">
-            <h4><i class="fas fa-crown"></i> Quick Admin</h4>
-            <button class="admin-panel-close" onclick="toggleAdminPanel()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="admin-panel-content">
-            <div class="admin-stats-mini">
-                <div class="stat-mini">
-                    <i class="fas fa-users"></i>
-                    <span class="stat-label">Total Users</span>
-                    <span class="stat-value" id="totalUsers">Loading...</span>
-                </div>
-                <div class="stat-mini">
-                    <i class="fas fa-file-shield"></i>
-                    <span class="stat-label">Total Files</span>
-                    <span class="stat-value" id="totalFiles">Loading...</span>
-                </div>
-                <div class="stat-mini">
-                    <i class="fas fa-activity"></i>
-                    <span class="stat-label">Activities Today</span>
-                    <span class="stat-value" id="activitiesToday">Loading...</span>
-                </div>
-            </div>
-            <div class="admin-quick-actions">
-                <a href="{{ url_for('admin_create_user') }}" class="quick-action-btn">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Add User</span>
-                </a>
-                <a href="{{ url_for('admin_users') }}" class="quick-action-btn">
-                    <i class="fas fa-users-cog"></i>
-                    <span>Manage Users</span>
-                </a>
-                <a href="{{ url_for('admin_files') }}" class="quick-action-btn">
-                    <i class="fas fa-file-lock"></i>
-                    <span>Manage Files</span>
-                </a>
-                <a href="{{ url_for('admin_activity') }}" class="quick-action-btn">
-                    <i class="fas fa-chart-line"></i>
-                    <span>View Activity</span>
-                </a>
-                <a href="{{ url_for('admin_settings') }}" class="quick-action-btn">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
-                </a>
-                <a href="{{ url_for('admin_dashboard') }}" class="quick-action-btn primary">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Full Dashboard</span>
-                </a>
-            </div>
-        </div>
+      </nav>
     </div>
-    <div class="admin-panel-overlay" id="adminPanelOverlay" onclick="toggleAdminPanel()"></div>
-    {% endif %}
-    {% endif %}
+  </header>
 
-    <!-- Flash Messages -->
-    <div class="container mt-3">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    {% set alert_class = 'danger' if category == 'error' else ('warning' if category == 'warning' else 'success') %}
-                    {% set icon_class = 'exclamation-triangle' if category == 'error' else ('exclamation-circle' if category == 'warning' else 'check-circle') %}
-                    <div class="alert alert-{{ alert_class }} alert-dismissible fade show cyber-alert" role="alert">
-                        <i class="fas fa-{{ icon_class }}"></i>
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
+  <div class="shell flash-stack cyber-stack">
+    <div id="ui-error" class="flash flash--error" role="alert" aria-atomic="true" hidden></div>
+    <div id="ui-notice" class="flash flash--success" role="status" aria-live="polite" aria-atomic="true"></div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        {% set is_error = category in ['error', 'danger'] %}
+        <div class="flash flash--{{ 'error' if is_error else ('warning' if category == 'warning' else 'success') }}" role="{{ 'alert' if is_error else 'status' }}" aria-live="{{ 'assertive' if is_error else 'polite' }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+  </div>
 
-    <!-- Main Content -->
-    <main class="container mt-4">
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Footer -->
-    <footer class="cyber-footer mt-5">
-        <div class="container text-center">
-            <p>&copy; 2025 CipherSphere. Securing your digital world with futuristic encryption.</p>
-            <p class="made-by">Made by <span class="creator-name">Parikshit Dahiya</span></p>
-        </div>
-    </footer>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="cyber-loader">
-            <div class="loader-ring"></div>
-            <div class="loader-text">Processing...</div>
-        </div>
-    </div>
-
-    <!-- Custom Scripts -->
-    <script>
-        // Initialize cyber effects
-        $(document).ready(function() {
-            initCyberEffects();
-            initFormValidation();
-        });
-    </script>
+  <main id="main-content" class="shell main-content page-stage" tabindex="-1">{% block content %}{% endblock %}</main>
+  <footer class="site-footer cyber-footer"><div class="shell footer-inner"><p><strong>CipherSphere</strong> encryption console</p><p>Keep encryption keys separate from protected data.</p></div></footer>
+  <div id="ui-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 </body>
 </html>

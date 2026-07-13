@@ -1,312 +1,154 @@
-# 🔒 CipherSphere
+# CipherSphere
 
-A futuristic, military-grade encryption platform built with Flask, featuring advanced cryptographic algorithms and a stunning cyberpunk-inspired interface.
+CipherSphere is a Flask security workspace for encrypting text and files, managing a private ciphertext vault, sharing ciphertext with named users, and administering access. Supabase provides Auth, PostgreSQL, and private object storage in production.
 
-![CipherSphere](https://img.shields.io/badge/CipherSphere-v1.0-blue?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3.13-green?style=for-the-badge&logo=python)
-![Flask](https://img.shields.io/badge/Flask-2.3.3-red?style=for-the-badge&logo=flask)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
+## Interface
 
-## 📸 Screenshots
+CipherSphere has two complete visual systems—not a light/dark recolor—and a persistent theme switcher in the top-right navigation and Profile settings.
 
-<div align="center">
+### Cipher Noir
 
-### 🏠 Homepage
-![Homepage](screenshots/homepage.png)
+![Cipher Noir home screen](docs/screenshots/cipher-noir-home.png)
 
-### 🔐 Encryption Interface
-![Encryption](screenshots/encryption.png)
+### Signal Atelier
 
-### 📊 Dashboard
-![Dashboard](screenshots/dashboard.png)
+![Signal Atelier home screen](docs/screenshots/signal-atelier-home.png)
 
-### 🗄️ Vault
-![Vault](screenshots/vault.png)
+### Account creation
 
-### 👤 Profile Management
-![Profile](screenshots/profile.png)
+![Create account screen with Google sign-in](docs/screenshots/create-account.png)
 
-### 🛡️ Admin Dashboard
-![Admin Dashboard](screenshots/admin_dashboard.png)
+Both systems include responsive navigation, visible keyboard focus, semantic forms and tables, reduced-motion support, and a visible pause/resume control for persistent effects.
 
-</div>
+## Current features
 
-## 🌟 Features
+- Supabase email/password registration, email confirmation, sign-in, recovery, and Google OAuth with PKCE.
+- The first Supabase identity becomes the initial administrator; later identities become members.
+- Optional private profile photos with verified image decoding, metadata stripping, square normalization, and size limits.
+- Authenticated text and file encryption using the versioned CSPH v1 envelope.
+- AES-256-GCM, authenticated Fernet, and hybrid RSA-OAEP/AES-256-GCM modes.
+- Owner-scoped vault records, expiring shares, and single-use download tokens.
+- Administrator views for users, encrypted-file metadata, activity, and service state.
+- Local private storage for development and a private Supabase Storage backend for serverless production.
+- Cipher Noir and Signal Atelier with animated switching, local persistence, and motion controls.
 
-### 🔐 Encryption & Security
-- **Multiple Encryption Algorithms**: AES-256, RSA-4096, and Fernet symmetric encryption
-- **Text & File Encryption**: Secure both text messages and files up to 50MB
-- **Military-Grade Security**: Advanced cryptographic implementations with secure key management
-- **Password Hashing**: Bcrypt-based password security with salt
+Encryption keys are returned to the user and are not stored in vault/share records. A lost key cannot be recovered by CipherSphere.
 
-### 👥 User Management
-- **User Authentication**: Secure login/logout with session management
-- **Profile Management**: Customizable user profiles with picture upload
-- **Security Questions**: Additional security layer for password recovery
-- **Admin Dashboard**: Comprehensive administration panel
+## Security controls
 
-### 📁 File Management
-- **Secure Vault**: Personal encrypted file storage
-- **File Sharing**: Share encrypted files between users with permission controls
-- **Multiple File Types**: Support for documents, images, archives, and media files
-- **Favorites System**: Mark frequently used files as favorites
+- Supabase owns passwords, confirmation, OAuth, and recovery tokens.
+- Application tables use RLS with deny-by-default Data API access; server-side authorization still scopes every record operation.
+- Flask-WTF CSRF protection, Jinja auto-escaping, parameterized SQLAlchemy queries, safe upload names, and owner/admin checks.
+- CSP, HSTS in production, anti-clickjacking, MIME sniffing protection, referrer/permissions policies, and no-store caching for authenticated pages.
+- Secure `__Host-` production cookies, strong session protection, session rotation after login, bounded form/request limits, and fail-closed production validation.
+- Rate limits on registration, password login, Google OAuth, and account recovery. The built-in limiter is process-local defense in depth; use Vercel/Supabase platform rate controls for distributed enforcement.
+- Atomic single-use download consumption prevents concurrent replay.
+- Private Supabase Storage has no anonymous/authenticated object policy; only the server-only secret may access it.
 
-### 🎨 Modern Interface
-- **Cyberpunk Theme**: Futuristic, animated UI with Tesla-inspired design
-- **Responsive Design**: Mobile-friendly interface that works on all devices
-- **Interactive Animations**: Smooth transitions and visual effects
-- **Dark Mode**: Eye-friendly dark theme with neon accents
+The checked dependency set currently passes `pip-audit`, `pip check`, and Bandit without known dependency vulnerabilities or medium/high findings.
 
-### 📊 Analytics & Monitoring
-- **Activity Logging**: Track all user actions and system events
-- **Admin Analytics**: Monitor system usage and user activities
-- **File Statistics**: Detailed information about encrypted files
-- **Security Monitoring**: Track login attempts and security events
+## Local development
 
-## 🚀 Quick Start
+Requirements:
 
-### Prerequisites
-- Python 3.13 or higher
-- pip package manager
-- Git (optional)
+- Python 3.12
+- A Supabase project
+- Supabase URL and publishable key
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/ciphersphere.git
-   cd ciphersphere
-   ```
-
-2. **Create a virtual environment**
-   ```bash
-   python -m venv venv
-   
-   # Windows
-   venv\Scripts\activate
-   
-   # macOS/Linux
-   source venv/bin/activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Initialize the database**
-   ```bash
-   python app.py
-   ```
-   The application will automatically create the SQLite database on first run.
-
-5. **Run the application**
-   ```bash
-   python app.py
-   ```
-   Visit `http://localhost:5000` in your browser.
-
-### First-Time Setup
-
-1. **Create an Admin Account**
-   - Register a new account through the web interface
-   - Run the admin creation script:
-     ```bash
-     python check_admin.py
-     ```
-
-2. **Access Admin Dashboard**
-   - Login with your admin account
-   - Navigate to `/admin` to access the admin panel
-
-## 🏗️ Project Structure
-
-```
-ciphersphere/
-│
-├── app.py                      # Main Flask application
-├── check_admin.py             # Admin user creation utility
-├── requirements.txt           # Python dependencies
-│
-├── ciphersphere/              # Main application package
-│   ├── encryption.py          # Encryption algorithms and utilities
-│   ├── forms.py              # WTForms for form handling
-│   ├── models.py             # SQLAlchemy database models
-│   │
-│   ├── static/               # Static assets
-│   │   ├── css/              # Stylesheets
-│   │   │   ├── style.css     # Main stylesheet
-│   │   │   ├── style_tesla.css  # Tesla theme
-│   │   │   └── style_new.css # Alternative theme
-│   │   ├── js/               # JavaScript files
-│   │   │   ├── main.js       # Main JavaScript
-│   │   │   └── animations.js # UI animations
-│   │   └── images/           # Image assets
-│   │
-│   ├── templates/            # Jinja2 templates
-│   │   ├── base.html         # Base template
-│   │   ├── index.html        # Homepage
-│   │   ├── login.html        # Login page
-│   │   ├── register.html     # Registration page
-│   │   ├── dashboard.html    # User dashboard
-│   │   ├── encrypt.html      # Encryption interface
-│   │   ├── decrypt.html      # Decryption interface
-│   │   ├── vault.html        # File vault
-│   │   ├── profile.html      # User profile
-│   │   ├── shared_files.html # Shared files
-│   │   └── admin/            # Admin templates
-│   │       ├── dashboard.html
-│   │       ├── users.html
-│   │       ├── files.html
-│   │       └── settings.html
-│   │
-│   ├── uploads/              # User uploaded files
-│   │   └── profiles/         # Profile pictures
-│   └── vault/                # Encrypted file storage
-│
-└── instance/                 # Instance-specific files
-    └── ciphersphere.db       # SQLite database
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Create a `.env` file in the root directory:
-
-```env
-SECRET_KEY=your-secret-key-here
-SQLALCHEMY_DATABASE_URI=sqlite:///ciphersphere.db
-UPLOAD_FOLDER=ciphersphere/uploads
-VAULT_FOLDER=ciphersphere/vault
-MAX_CONTENT_LENGTH=52428800  # 50MB in bytes
-```
-
-### Supported File Types
-
-- **Documents**: txt, pdf, doc, docx, xls, xlsx, ppt, pptx
-- **Images**: jpg, jpeg, png, gif, bmp, webp, svg
-- **Archives**: zip, rar, 7z, tar, gz
-- **Media**: mp3, wav, mp4, avi, mkv, mov
-- **Code**: json, xml, csv, log, md, py, js, css, html
-
-## 🔐 Encryption Algorithms
-
-### AES (Advanced Encryption Standard)
-- **Type**: Symmetric encryption
-- **Key Size**: 256-bit
-- **Mode**: CBC with PKCS7 padding
-- **Use Case**: Fast encryption for large files
-
-### RSA (Rivest-Shamir-Adleman)
-- **Type**: Asymmetric encryption
-- **Key Size**: 4096-bit
-- **Padding**: OAEP with SHA-256
-- **Use Case**: Secure key exchange and small data
-
-### Fernet
-- **Type**: Symmetric encryption
-- **Based on**: AES-128 with HMAC-SHA256
-- **Features**: Built-in timestamp and authentication
-- **Use Case**: General-purpose encryption with integrity
-
-## 🛡️ Security Features
-
-- **Password Security**: Bcrypt hashing with automatic salt generation
-- **Session Management**: Secure session handling with Flask-Login
-- **CSRF Protection**: Cross-site request forgery prevention
-- **File Upload Security**: Secure filename handling and type validation
-- **SQL Injection Prevention**: SQLAlchemy ORM protection
-- **XSS Protection**: Template auto-escaping enabled
-
-## 🎨 Themes
-
-CipherSphere includes multiple visual themes:
-
-1. **Default Theme** (`style.css`): Clean, professional design
-2. **Tesla Theme** (`style_tesla.css`): Futuristic cyberpunk aesthetics
-3. **New Theme** (`style_new.css`): Modern minimalist design
-
-Switch themes by modifying the CSS import in `base.html`.
-
-## 📱 API Endpoints
-
-### Authentication
-- `POST /login` - User login
-- `POST /register` - User registration
-- `GET /logout` - User logout
-- `POST /forgot-password` - Password recovery
-
-### Encryption
-- `POST /encrypt` - Encrypt text/file
-- `POST /decrypt` - Decrypt text/file
-- `GET /vault` - View encrypted files
-- `POST /upload` - Upload and encrypt file
-
-### File Management
-- `GET /download/<file_id>` - Download encrypted file
-- `POST /share/<file_id>` - Share file with user
-- `DELETE /delete/<file_id>` - Delete encrypted file
-
-### Admin
-- `GET /admin` - Admin dashboard
-- `GET /admin/users` - User management
-- `GET /admin/files` - File management
-- `GET /admin/activity` - Activity logs
-
-## 🧪 Testing
-
-Run the application in development mode:
-
-```bash
-# Enable debug mode
-export FLASK_ENV=development  # Linux/macOS
-set FLASK_ENV=development     # Windows
-
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.lock
+Copy-Item .env.example .env
 python app.py
 ```
 
-## 🤝 Contributing
+Open `http://localhost:5000`.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+For isolated local development, omit `DATABASE_URL` and leave `STORAGE_BACKEND=local`; CipherSphere uses ignored files under `instance/`. This SQLite/local-storage mode is not for deployment.
 
+## Supabase setup
 
+Apply every migration in `supabase/migrations/` in filename order (or link the Supabase CLI and run `supabase db push`). They create the application schema, Auth profile trigger, indexes, RLS controls, avatar field, and private `ciphersphere-private` Storage bucket.
 
-## 🐛 Known Issues
+Configure Auth:
 
-- Large file uploads may timeout on slower connections
-- Mobile responsiveness needs optimization for tablets
-- File sharing permissions could be more granular
+1. Enable email/password authentication.
+2. In Google Cloud, create a Web OAuth client and set its authorized redirect URI to `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`.
+3. In Supabase, open **Authentication → Sign In / Providers → Google**, then enter the Google client ID/secret and enable it.
+4. For local development, set **Authentication → URL Configuration → Site URL** to `http://localhost:5000`.
+5. Keep these local Redirect URLs:
+   - `http://localhost:5000/auth/callback`
+   - `http://localhost:5000/login`
+   - `http://localhost:5000/reset_password`
+6. Enable leaked-password protection under Auth attack/password protection when available on your plan.
 
-## 📄 License
+Google credentials stay in Supabase. Do not place the Google client secret in this repository or browser code.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Deploy to Vercel
 
-## 🙏 Acknowledgments
+Vercel detects the top-level Flask `app` in `app.py`; `.python-version` selects Python 3.12 and `vercel.json` configures the function duration/bundle exclusions.
 
-- [Flask](https://flask.palletsprojects.com/) - Web framework
-- [Cryptography](https://cryptography.io/) - Cryptographic library
-- [Bootstrap](https://getbootstrap.com/) - CSS framework
-- [Font Awesome](https://fontawesome.com/) - Icons
-- [SQLAlchemy](https://www.sqlalchemy.org/) - Database ORM
+1. Push this repository to GitHub, then import it in Vercel (or install the CLI and run `vercel`).
+2. In **Vercel → Project Settings → Environment Variables**, add the values below for Production. Do not upload `.env`.
 
-## 🔗 Links
+```dotenv
+CIPHERSPHERE_ENV=production
+SECRET_KEY=<stable random value of at least 32 characters>
+DATABASE_URL=<Supabase transaction-pooler URI on port 6543>
+AUTO_CREATE_DATABASE=false
 
-- [Live Demo](https://your-demo-url.com)
-- [Documentation](https://your-docs-url.com)
-- [Bug Reports](https://github.com/your-username/ciphersphere/issues)
-- [Feature Requests](https://github.com/your-username/ciphersphere/discussions)
+AUTH_PROVIDER=supabase
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_PUBLISHABLE_KEY=<publishable key>
+SUPABASE_SECRET_KEY=<server-only secret key>
+SUPABASE_PASSWORD_REDIRECT_URL=https://YOUR_DOMAIN/reset_password
+SUPABASE_OAUTH_REDIRECT_URL=https://YOUR_DOMAIN/auth/callback
 
----
+STORAGE_BACKEND=supabase
+SUPABASE_STORAGE_BUCKET=ciphersphere-private
+MAX_CONTENT_LENGTH=4194304
+AVATAR_MAX_BYTES=4194304
 
-<p align="center">
-  Made with ❤️ by Parikshit <a 
-</p>
+SESSION_COOKIE_SECURE=true
+TRUSTED_HOSTS=YOUR_DOMAIN
+TRUST_PROXY_HEADERS=true
+```
 
-<p align="center">
-  <strong>🔒 Secure. Simple. Sophisticated. 🔒</strong>
-</p>
+Use Supabase’s **transaction pooler** on port `6543` for Vercel’s short-lived functions. The app disables prepared statements and application-side connection pooling in Vercel so Supavisor can manage connections.
+
+Vercel Functions currently limit request bodies to 4.5 MB, so the recommended application limit is 4 MiB. Larger encrypted-file workflows need direct-to-storage upload architecture or a non-serverless host.
+
+3. Deploy once to receive the Vercel domain.
+4. In Supabase URL Configuration:
+   - Set **Site URL** to `https://YOUR_DOMAIN`.
+   - Keep the localhost redirects for development.
+   - Add `https://YOUR_DOMAIN/auth/callback`.
+   - Add `https://YOUR_DOMAIN/login`.
+   - Add `https://YOUR_DOMAIN/reset_password`.
+   - Optional previews: add `https://*-YOUR_VERCEL_ACCOUNT.vercel.app/**` only if you need OAuth/email flows on preview deployments.
+5. Replace `YOUR_DOMAIN` in the Vercel callback environment variables, then redeploy because environment changes apply only to new deployments.
+6. Deploy production from the Vercel dashboard or run `vercel --prod`.
+
+Do not commit `SECRET_KEY`, `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `.env`, local databases, uploads, or `.vercel` metadata. They are excluded by `.gitignore` and `.vercelignore`.
+
+## Project structure
+
+```text
+app.py                         Flask/Vercel entry point
+wsgi.py                        generic WSGI entry point
+ciphersphere/
+  __init__.py                  application factory
+  auth_service.py              Supabase Auth adapter
+  encryption.py                CSPH v1 cryptography
+  security.py                  headers, validation, rate limits
+  storage_service.py           local/private Supabase storage
+  models.py                    SQLAlchemy records
+  routes/                      auth, crypto, vault, sharing, profile, admin
+  templates/                   semantic Jinja pages
+  static/                      two-system UI, motion, logo
+supabase/migrations/            PostgreSQL/RLS/Storage migrations
+docs/screenshots/               current public product screenshots
+```
+
+See [DESIGN.md](DESIGN.md) for the visual systems and [PRODUCT.md](PRODUCT.md) for behavior and security invariants.

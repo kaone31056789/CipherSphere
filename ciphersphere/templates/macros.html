@@ -1,0 +1,90 @@
+{% macro csrf(form=none) -%}
+  {% if form is defined and form and form.csrf_token is defined %}{{ form.csrf_token }}{% elif csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+{%- endmacro %}
+
+{% macro input_field(name, label, type='text', autocomplete='', required=false, hint='', value='', form=none, minlength=none) -%}
+  {% set field = form[name] if form is defined and form and form[name] is defined else none %}
+  {% set errors = field.errors if field and field.errors else [] %}
+  <div class="field">
+    <label for="{{ name }}">{{ label }}{% if required %}<span class="required" aria-hidden="true"> *</span>{% endif %}</label>
+    {% if hint %}<p class="field-hint" id="{{ name }}-hint">{{ hint }}</p>{% endif %}
+    <input id="{{ name }}" name="{{ name }}" type="{{ type }}"
+      {% if type != 'password' %}value="{{ request.form.get(name, value)|default('', true) }}"{% endif %}
+      {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+      {% if required %}required aria-required="true"{% endif %}
+      {% if minlength %}minlength="{{ minlength }}"{% endif %}
+      {% if hint or errors %}aria-describedby="{% if hint %}{{ name }}-hint{% endif %}{% if errors %} {{ name }}-error{% endif %}"{% endif %}
+      {% if errors %}aria-invalid="true"{% endif %}>
+    {% if type == 'password' %}<button class="button button--quiet password-toggle" type="button" data-password-toggle="{{ name }}" aria-controls="{{ name }}" aria-pressed="false">Show password</button>{% endif %}
+    {% if errors %}<p class="field-error" id="{{ name }}-error" role="alert">{{ errors|join('. ') }}</p>{% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro select_field(name, label, choices, selected='', hint='', required=false, form=none) -%}
+  {% set field = form[name] if form is defined and form and form[name] is defined else none %}
+  {% set errors = field.errors if field and field.errors else [] %}
+  {% set current = request.form.get(name, selected) %}
+  <div class="field">
+    <label for="{{ name }}">{{ label }}{% if required %}<span class="required" aria-hidden="true"> *</span>{% endif %}</label>
+    {% if hint %}<p class="field-hint" id="{{ name }}-hint">{{ hint }}</p>{% endif %}
+    <select id="{{ name }}" name="{{ name }}" {% if required %}required aria-required="true"{% endif %}
+      {% if hint or errors %}aria-describedby="{% if hint %}{{ name }}-hint{% endif %}{% if errors %} {{ name }}-error{% endif %}"{% endif %}
+      {% if errors %}aria-invalid="true"{% endif %}>
+      {% for value, text in choices %}<option value="{{ value }}" {% if current == value %}selected{% endif %}>{{ text }}</option>{% endfor %}
+    </select>
+    {% if errors %}<p class="field-error" id="{{ name }}-error" role="alert">{{ errors|join('. ') }}</p>{% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro textarea_field(name, label, hint='', required=false, form=none, rows=8) -%}
+  {% set field = form[name] if form is defined and form and form[name] is defined else none %}
+  {% set errors = field.errors if field and field.errors else [] %}
+  <div class="field">
+    <label for="{{ name }}">{{ label }}{% if required %}<span class="required" aria-hidden="true"> *</span>{% endif %}</label>
+    {% if hint %}<p class="field-hint" id="{{ name }}-hint">{{ hint }}</p>{% endif %}
+    <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}" {% if required %}required aria-required="true"{% endif %}
+      {% if hint or errors %}aria-describedby="{% if hint %}{{ name }}-hint{% endif %}{% if errors %} {{ name }}-error{% endif %}"{% endif %}
+      {% if errors %}aria-invalid="true"{% endif %}>{{ request.form.get(name, '') }}</textarea>
+    {% if errors %}<p class="field-error" id="{{ name }}-error" role="alert">{{ errors|join('. ') }}</p>{% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro file_field(name, label, hint='', required=false, form=none) -%}
+  {% set field = form[name] if form is defined and form and form[name] is defined else none %}
+  {% set errors = field.errors if field and field.errors else [] %}
+  <div class="field">
+    <label for="{{ name }}">{{ label }}{% if required %}<span class="required" aria-hidden="true"> *</span>{% endif %}</label>
+    {% if hint %}<p class="field-hint" id="{{ name }}-hint">{{ hint }}</p>{% endif %}
+    <input id="{{ name }}" name="{{ name }}" type="file" {% if required %}required aria-required="true"{% endif %}
+      {% if hint or errors %}aria-describedby="{% if hint %}{{ name }}-hint{% endif %}{% if errors %} {{ name }}-error{% endif %}"{% endif %}
+      {% if errors %}aria-invalid="true"{% endif %}>
+    {% if errors %}<p class="field-error" id="{{ name }}-error" role="alert">{{ errors|join('. ') }}</p>{% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro empty_state(title, body, href='', action='') -%}
+  <div class="empty-state"><h2>{{ title }}</h2><p>{{ body }}</p>{% if href and action %}<a class="button button--secondary" href="{{ href }}">{{ action }}</a>{% endif %}</div>
+{%- endmacro %}
+
+{% macro status(text, tone='neutral') -%}<span class="status status--{{ tone }}">{{ text }}</span>{%- endmacro %}
+
+{% macro pagination(page, endpoint) -%}
+  {% if page is defined and page and page.pages|default(1) > 1 %}
+    <nav class="pagination" aria-label="Pagination">
+      {% if page.has_prev %}<a class="button button--quiet" href="{{ url_for(endpoint, page=page.prev_num) }}">Previous</a>{% endif %}
+      <span>Page {{ page.page }} of {{ page.pages }}</span>
+      {% if page.has_next %}<a class="button button--quiet" href="{{ url_for(endpoint, page=page.next_num) }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+{%- endmacro %}
+
+{% macro admin_nav() -%}
+  {% set endpoint = request.endpoint|default('', true) %}
+  <nav class="subnav" aria-label="Administration">
+    <a href="{{ url_for('admin_dashboard') }}" {% if endpoint == 'admin_dashboard' %}aria-current="page"{% endif %}>Overview</a>
+    <a href="{{ url_for('admin_users') }}" {% if endpoint == 'admin_users' %}aria-current="page"{% endif %}>Users</a>
+    <a href="{{ url_for('admin_files') }}" {% if endpoint == 'admin_files' %}aria-current="page"{% endif %}>Files</a>
+    <a href="{{ url_for('admin_activity') }}" {% if endpoint == 'admin_activity' %}aria-current="page"{% endif %}>Activity</a>
+    <a href="{{ url_for('admin_settings') }}" {% if endpoint == 'admin_settings' %}aria-current="page"{% endif %}>Settings</a>
+  </nav>
+{%- endmacro %}

@@ -1,263 +1,38 @@
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
+{% from 'macros.html' import empty_state with context %}
 {% block title %}Dashboard - CipherSphere{% endblock %}
-
+{% block description %}Review encrypted vault items, recent activity, shared files, and secure workspace actions in CipherSphere.{% endblock %}
+{% block body_class %}app-page dashboard-page{% endblock %}
 {% block content %}
-<div class="dashboard-container">
-    <!-- Welcome Section -->
-    <div class="dashboard-header mb-4">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="dashboard-title">
-                    <i class="fas fa-tachometer-alt"></i>
-                    Welcome back, <span class="username-highlight">{{ current_user.full_name }}</span>
-                </h1>
-                <p class="dashboard-subtitle">Your secure command center</p>
-            </div>
-            <div class="col-md-4 text-end">
-                <div class="quick-actions">
-                    <a href="{{ url_for('encrypt') }}" class="btn cyber-btn-primary me-2">
-                        <i class="fas fa-lock"></i> Encrypt
-                    </a>
-                    <a href="{{ url_for('decrypt_simple') }}" class="btn cyber-btn-secondary">
-                        <i class="fas fa-unlock"></i> Decrypt
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+{% set dashboard_stats = stats|default({}) %}
+{% set files = recent_files|default([], true) %}
+{% set activity = recent_activity|default([], true) %}
+{% set shares = shared_files|default([], true) %}
+<header class="page-header dashboard-hero motion-reveal">
+  <div class="dashboard-hero__content">
+    <p class="eyebrow workspace-signal"><span class="workspace-signal__dot" aria-hidden="true"></span>Secure workspace</p>
+    <h1>Welcome, {{ current_user.full_name|default(current_user.username, true) }}</h1>
+    <p class="lede dashboard-hero__lede">Protect new data, recover encrypted content, or follow the latest activity across your private workspace.</p>
+  </div>
+  <div class="dashboard-hero__rail">
+    <dl class="dashboard-hero__status" aria-label="Workspace security status"><div><dt>Envelope</dt><dd>CSPH v1</dd></div><div><dt>Session</dt><dd>Authenticated</dd></div></dl>
+    <div class="actions dashboard-hero__actions"><a class="button button--primary" href="{{ url_for('encrypt') }}">Encrypt data</a><a class="button button--secondary" href="{{ url_for('decrypt') }}">Decrypt data</a></div>
+  </div>
+</header>
 
-    <!-- Statistics Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="cyber-stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-file-lock"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>{{ recent_files|length }}</h3>
-                    <p>Files Encrypted</p>
-                </div>
-                <div class="stat-trend">
-                    <i class="fas fa-arrow-up"></i>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="cyber-stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-share-alt"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>{{ shared_files|length }}</h3>
-                    <p>Shared Files</p>
-                </div>
-                <div class="stat-trend">
-                    <i class="fas fa-arrow-up"></i>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="cyber-stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-activity"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>{{ recent_activity|length }}</h3>
-                    <p>Recent Activities</p>
-                </div>
-                <div class="stat-trend">
-                    <i class="fas fa-arrow-up"></i>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="cyber-stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>100%</h3>
-                    <p>Security Level</p>
-                </div>
-                <div class="stat-trend">
-                    <i class="fas fa-check"></i>
-                </div>
-            </div>
-        </div>
-    </div>
+<dl class="metric-grid motion-stagger" aria-label="Workspace summary">
+  <div class="metric-card metric-card--vault"><dt>Vault items</dt><dd><span class="metric-value">{{ dashboard_stats.get('vault_files', dashboard_stats.get('total_files', files|length)) }}</span></dd></div>
+  <div class="metric-card metric-card--shares"><dt>Received shares</dt><dd><span class="metric-value">{{ dashboard_stats.get('shared_files', shares|length) }}</span></dd></div>
+  <div class="metric-card metric-card--activity"><dt>Recent events</dt><dd><span class="metric-value">{{ dashboard_stats.get('recent_activity', activity|length) }}</span></dd></div>
+  <div class="metric-card metric-card--access"><dt>Access level</dt><dd><span class="metric-value metric-value--text">{{ 'Administrator' if current_user.is_admin else 'Member' }}</span></dd></div>
+</dl>
 
-    <div class="row g-4">
-        <!-- Recent Activity -->
-        <div class="col-lg-6">
-            <div class="cyber-dashboard-card">
-                <div class="card-header">
-                    <h4><i class="fas fa-history"></i> Recent Activity</h4>
-                    <a href="#" class="cyber-link">View All</a>
-                </div>
-                <div class="card-body">
-                    {% if recent_activity %}
-                        <div class="activity-timeline">
-                            {% for activity in recent_activity %}
-                                <div class="activity-item">
-                                    <div class="activity-icon">
-                                        {% if 'encrypted' in activity.action %}
-                                            <i class="fas fa-lock"></i>
-                                        {% elif 'decrypted' in activity.action %}
-                                            <i class="fas fa-unlock"></i>
-                                        {% elif 'login' in activity.action %}
-                                            <i class="fas fa-sign-in-alt"></i>
-                                        {% else %}
-                                            <i class="fas fa-info-circle"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div class="activity-content">
-                                        <p class="activity-text">{{ activity.action }}</p>
-                                        <span class="activity-time">{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-clock"></i>
-                            <p>No recent activity</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Files -->
-        <div class="col-lg-6">
-            <div class="cyber-dashboard-card">
-                <div class="card-header">
-                    <h4><i class="fas fa-file-alt"></i> Recent Files</h4>
-                    <a href="{{ url_for('vault') }}" class="cyber-link">View Vault</a>
-                </div>
-                <div class="card-body">
-                    {% if recent_files %}
-                        <div class="files-list">
-                            {% for file in recent_files %}
-                                <div class="file-item">
-                                    <div class="file-icon">
-                                        {% if file.is_text %}
-                                            <i class="fas fa-file-alt"></i>
-                                        {% else %}
-                                            <i class="fas fa-file"></i>
-                                        {% endif %}
-                                    </div>
-                                    <div class="file-info">
-                                        <p class="file-name">{{ file.original_filename }}</p>
-                                        <span class="file-meta">
-                                            {{ file.algorithm }} • {{ (file.file_size / 1024) | round(1) }}KB
-                                        </span>
-                                    </div>
-                                    <div class="file-actions">
-                                        <button class="btn btn-sm cyber-btn-outline">
-                                            <i class="fas fa-download"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-folder-open"></i>
-                            <p>No files yet</p>
-                            <a href="{{ url_for('encrypt') }}" class="btn cyber-btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Encrypt First File
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Shared Files Section -->
-    {% if shared_files %}
-    <div class="row g-4 mt-4">
-        <div class="col-12">
-            <div class="cyber-dashboard-card">
-                <div class="card-header">
-                    <h4><i class="fas fa-users"></i> Files Shared With You</h4>
-                </div>
-                <div class="card-body">
-                    <div class="shared-files-grid">
-                        {% for shared in shared_files %}
-                            <div class="shared-file-card">
-                                <div class="shared-file-header">
-                                    <i class="fas fa-share-alt"></i>
-                                    <span class="shared-by">From: {{ shared.shared_by.username }}</span>
-                                </div>
-                                <div class="shared-file-content">
-                                    <h6>{{ shared.encrypted_file.original_filename }}</h6>
-                                    <p class="shared-file-meta">
-                                        {{ shared.encrypted_file.algorithm }} • {{ shared.permissions }}
-                                    </p>
-                                </div>
-                                <div class="shared-file-actions">
-                                    <button class="btn cyber-btn-primary btn-sm">
-                                        <i class="fas fa-eye"></i> View
-                                    </button>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-</div>
-
-<!-- Quick Actions Modal -->
-<div class="modal fade" id="quickActionsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content cyber-modal">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-bolt"></i> Quick Actions
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <a href="{{ url_for('encrypt') }}" class="quick-action-card">
-                            <i class="fas fa-lock"></i>
-                            <h6>Encrypt File/Text</h6>
-                            <p>Secure your data with encryption</p>
-                        </a>
-                    </div>
-                    <div class="col-md-6">
-                        <a href="{{ url_for('decrypt_simple') }}" class="quick-action-card">
-                            <i class="fas fa-unlock"></i>
-                            <h6>Decrypt File/Text</h6>
-                            <p>Access your encrypted data</p>
-                        </a>
-                    </div>
-                    <div class="col-md-6">
-                        <a href="{{ url_for('vault') }}" class="quick-action-card">
-                            <i class="fas fa-database"></i>
-                            <h6>Open Vault</h6>
-                            <p>Browse your saved files</p>
-                        </a>
-                    </div>
-                    <div class="col-md-6">
-                        <a href="{{ url_for('profile') }}" class="quick-action-card">
-                            <i class="fas fa-user-cog"></i>
-                            <h6>Profile Settings</h6>
-                            <p>Manage your account</p>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="dashboard-grid">
+  <section class="panel panel--records motion-reveal" aria-labelledby="recent-files-title"><div class="section-heading"><div><p class="section-kicker">Protected assets</p><h2 id="recent-files-title">Recent vault items</h2></div><a class="text-link text-link--arrow" href="{{ url_for('vault') }}">Open vault</a></div>
+    {% if files %}<ul class="record-list">{% for file in files %}<li class="record-item"><div><strong>{{ file.original_filename|default(file.filename|default('Encrypted item'), true) }}</strong><span>{{ file.algorithm|default('Algorithm unavailable') }} | {{ file.created_at.strftime('%d %b %Y, %H:%M') if file.created_at|default(none) else 'Date unavailable' }}</span></div><a class="text-link" href="{{ url_for('vault') }}">Manage</a></li>{% endfor %}</ul>{% else %}{{ empty_state('Your vault is empty', 'Encrypt text or a file to create your first protected item.', url_for('encrypt'), 'Encrypt data') }}{% endif %}
+  </section>
+  <section class="panel panel--activity motion-reveal" aria-labelledby="recent-activity-title"><div class="section-heading"><div><p class="section-kicker">Live history</p><h2 id="recent-activity-title">Recent activity</h2></div></div>
+    {% if activity %}<ol class="timeline">{% for item in activity %}<li class="timeline-item"><strong>{{ item.action|default('Workspace event')|replace('_', ' ')|title }}</strong><span>{{ item.timestamp.strftime('%d %b %Y, %H:%M') if item.timestamp|default(none) else 'Time unavailable' }}</span>{% if item.details|default('') %}<p>{{ item.details }}</p>{% endif %}</li>{% endfor %}</ol>{% else %}<p class="muted empty-message">No activity has been recorded yet.</p>{% endif %}
+  </section>
 </div>
 {% endblock %}

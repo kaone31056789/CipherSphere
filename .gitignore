@@ -121,6 +121,8 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
 .venv
 env/
 venv/
@@ -161,15 +163,24 @@ cython_debug/
 # VS Code
 .vscode/
 
-# CipherSphere specific
-instance/
-ciphersphere/uploads/profiles/*
-!ciphersphere/uploads/profiles/.gitkeep
-ciphersphere/vault/*
-!ciphersphere/vault/.gitkeep
+# CipherSphere generated output
+*.decrypted
+ciphersphere/uploads/
+uploads/
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
 
-# Secret keys and configuration
-.env
+# Private keys and local service state
+*.pem
+*.key
+*.p12
+*.pfx
+supabase/.temp/
+.vercel/
+
+# Legacy secret-bearing configuration
 config.py
 
 # Logs
