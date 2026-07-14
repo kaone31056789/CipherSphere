@@ -90,45 +90,39 @@ Google credentials stay in Supabase. Do not place the Google client secret in th
 Vercel detects the top-level Flask `app` in `app.py`; `.python-version` selects Python 3.12 and `vercel.json` configures the function duration/bundle exclusions.
 
 1. Push this repository to GitHub, then import it in Vercel (or install the CLI and run `vercel`).
-2. In **Vercel → Project Settings → Environment Variables**, add the values below for Production. Do not upload `.env`.
+2. Connect the official **Supabase integration** to the Vercel project for Production and Preview. It supplies `POSTGRES_URL`, `SUPABASE_URL`, the publishable keys, and the server-only Supabase key. CipherSphere accepts those integration names directly.
+3. In **Vercel → Project Settings → Environment Variables**, add the application settings below. Do not upload `.env`.
 
 ```dotenv
 CIPHERSPHERE_ENV=production
 SECRET_KEY=<stable random value of at least 32 characters>
-DATABASE_URL=<Supabase transaction-pooler URI on port 6543>
 AUTO_CREATE_DATABASE=false
 
 AUTH_PROVIDER=supabase
-SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
-SUPABASE_PUBLISHABLE_KEY=<publishable key>
-SUPABASE_SECRET_KEY=<server-only secret key>
-SUPABASE_PASSWORD_REDIRECT_URL=https://YOUR_DOMAIN/reset_password
-SUPABASE_OAUTH_REDIRECT_URL=https://YOUR_DOMAIN/auth/callback
-
 STORAGE_BACKEND=supabase
 SUPABASE_STORAGE_BUCKET=ciphersphere-private
 MAX_CONTENT_LENGTH=4194304
 AVATAR_MAX_BYTES=4194304
 
 SESSION_COOKIE_SECURE=true
-TRUSTED_HOSTS=YOUR_DOMAIN
 TRUST_PROXY_HEADERS=true
 ```
 
-Use Supabase’s **transaction pooler** on port `6543` for Vercel’s short-lived functions. The app disables prepared statements and application-side connection pooling in Vercel so Supavisor can manage connections.
+The integration's `POSTGRES_URL` uses Supabase’s transaction pooler for Vercel’s short-lived functions. `DATABASE_URL` remains available as an explicit override for other deployment providers. On Vercel, the app disables prepared statements and application-side connection pooling so Supavisor can manage connections.
+
+CipherSphere derives trusted hosts and password/OAuth callback URLs from Vercel's deployment URL variables. Set explicit `TRUSTED_HOSTS`, `SUPABASE_PASSWORD_REDIRECT_URL`, or `SUPABASE_OAUTH_REDIRECT_URL` only when using a custom domain or overriding the production destination.
 
 Vercel Functions currently limit request bodies to 4.5 MB, so the recommended application limit is 4 MiB. Larger encrypted-file workflows need direct-to-storage upload architecture or a non-serverless host.
 
-3. Deploy once to receive the Vercel domain.
-4. In Supabase URL Configuration:
+4. Deploy once to receive the Vercel domain.
+5. In Supabase URL Configuration:
    - Set **Site URL** to `https://YOUR_DOMAIN`.
    - Keep the localhost redirects for development.
    - Add `https://YOUR_DOMAIN/auth/callback`.
    - Add `https://YOUR_DOMAIN/login`.
    - Add `https://YOUR_DOMAIN/reset_password`.
    - Optional previews: add `https://*-YOUR_VERCEL_ACCOUNT.vercel.app/**` only if you need OAuth/email flows on preview deployments.
-5. Replace `YOUR_DOMAIN` in the Vercel callback environment variables, then redeploy because environment changes apply only to new deployments.
-6. Deploy production from the Vercel dashboard or run `vercel --prod`.
+6. Redeploy after environment changes because they apply only to new deployments. Deploy from the Vercel dashboard or run `vercel --prod`.
 
 Do not commit `SECRET_KEY`, `DATABASE_URL`, `SUPABASE_SECRET_KEY`, `.env`, local databases, uploads, or `.vercel` metadata. They are excluded by `.gitignore` and `.vercelignore`.
 

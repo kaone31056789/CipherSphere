@@ -28,6 +28,36 @@ def _csv_setting(name: str) -> list[str] | None:
     return values or None
 
 
+def _vercel_host(name: str) -> str:
+    """Return a validated host from a Vercel-provided URL variable."""
+    value = os.getenv(name, "").strip()
+    if value.startswith("https://"):
+        value = value.removeprefix("https://")
+    elif value.startswith("http://"):
+        value = value.removeprefix("http://")
+    return value.split("/", 1)[0].strip()
+
+
+def _redirect_url(name: str, path: str) -> str:
+    configured = os.getenv(name, "").strip()
+    if configured:
+        return configured
+    if _is_production():
+        host = _vercel_host("VERCEL_PROJECT_PRODUCTION_URL") or _vercel_host("VERCEL_URL")
+        return f"https://{host}{path}" if host else ""
+    return f"http://localhost:5000{path}"
+
+
+def _trusted_hosts() -> list[str] | None:
+    hosts = _csv_setting("TRUSTED_HOSTS") or []
+    if os.getenv("VERCEL"):
+        for name in ("VERCEL_PROJECT_PRODUCTION_URL", "VERCEL_URL"):
+            host = _vercel_host(name)
+            if host and host not in hosts:
+                hosts.append(host)
+    return hosts or None
+
+
 def _secret_key() -> str:
     configured = os.getenv("SECRET_KEY", "").strip()
     if configured and configured != "replace-with-a-long-random-value":
@@ -46,7 +76,12 @@ def _secret_key() -> str:
 
 
 def _database_url() -> str:
-    value = os.getenv("DATABASE_URL", "").strip()
+    # The official Vercel/Supabase integration provides POSTGRES_URL. Keep
+    # DATABASE_URL as the explicit override for other hosts and local tooling.
+    value = (
+        os.getenv("DATABASE_URL", "").strip()
+        or os.getenv("POSTGRES_URL", "").strip()
+    )
     if not value:
         return f"sqlite:///{(PROJECT_ROOT / 'instance' / 'ciphersphere.db').as_posix()}"
     if value.startswith("postgres://"):
@@ -95,21 +130,27 @@ class Config:
         os.getenv("SUPABASE_SECRET_KEY", "").strip()
         or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
     )
-    SUPABASE_PASSWORD_REDIRECT_URL = os.getenv(
-        "SUPABASE_PASSWORD_REDIRECT_URL", "http://localhost:5000/reset_password"
+    SUPABASE_PASSWORD_REDIRECT_URL = _redirect_url(
+        "SUPABASE_PASSWORD_REDIRECT_URL", "/reset_password"
     )
-    SUPABASE_OAUTH_REDIRECT_URL = os.getenv(
-        "SUPABASE_OAUTH_REDIRECT_URL", "http://localhost:5000/auth/callback"
+    SUPABASE_OAUTH_REDIRECT_URL = _redirect_url(
+        "SUPABASE_OAUTH_REDIRECT_URL", "/auth/callback"
     )
     VAULT_FOLDER = _path_setting("VAULT_FOLDER", PROJECT_ROOT / "instance" / "vault")
     TEMP_FOLDER = _path_setting("TEMP_FOLDER", PROJECT_ROOT / "instance" / "temp")
     AVATAR_FOLDER = _path_setting("AVATAR_FOLDER", PROJECT_ROOT / "instance" / "avatars")
-    AVATAR_MAX_BYTES = int(os.getenv("AVATAR_MAX_BYTES", 5 * 1024 * 1024))
-    STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "local").strip().lower()
+    AVATAR_MAX_BYTES = int(
+        os.getenv("AVATAR_MAX_BYTES", 4 * 1024 * 1024 if VERCEL else 5 * 1024 * 1024)
+    )
+    STORAGE_BACKEND = os.getenv(
+        "STORAGE_BACKEND", "supabase" if VERCEL else "local"
+    ).strip().lower()
     SUPABASE_STORAGE_BUCKET = os.getenv(
         "SUPABASE_STORAGE_BUCKET", "ciphersphere-private"
     ).strip()
-    MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", 50 * 1024 * 1024))
+    MAX_CONTENT_LENGTH = int(
+        os.getenv("MAX_CONTENT_LENGTH", 4 * 1024 * 1024 if VERCEL else 50 * 1024 * 1024)
+    )
     MAX_FORM_MEMORY_SIZE = int(os.getenv("MAX_FORM_MEMORY_SIZE", 500_000))
     MAX_FORM_PARTS = int(os.getenv("MAX_FORM_PARTS", 32))
     DOWNLOAD_TOKEN_TTL_SECONDS = int(os.getenv("DOWNLOAD_TOKEN_TTL_SECONDS", "600"))
@@ -132,7 +173,7 @@ class Config:
     REMEMBER_COOKIE_DURATION = timedelta(days=14)
     REMEMBER_COOKIE_REFRESH_EACH_REQUEST = False
     PREFERRED_URL_SCHEME = "https" if PRODUCTION else "http"
-    TRUSTED_HOSTS = _csv_setting("TRUSTED_HOSTS")
+    TRUSTED_HOSTS = _trusted_hosts()
     TRUST_PROXY_HEADERS = _bool_setting("TRUST_PROXY_HEADERS")
     RATE_LIMIT_MAX_KEYS = int(os.getenv("RATE_LIMIT_MAX_KEYS", 10_000))
     AUTH_RATE_LIMIT_LOGIN = int(os.getenv("AUTH_RATE_LIMIT_LOGIN", 10))
