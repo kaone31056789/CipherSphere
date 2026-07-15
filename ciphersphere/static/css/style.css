@@ -230,16 +230,27 @@ code, .code-well { font-family: ui-monospace, SFMono-Regular, Consolas, monospac
 .spec-list dt, .detail-list dt { color: var(--muted); }
 .spec-list dd, .detail-list dd { margin: 0; color: var(--strong); font-weight: 740; }
 .material-sheet, .optic-core { display: none; }
-.protocol-status { display: grid; grid-template-columns: 0.65fr 1.35fr; margin-top: 0; border-radius: 0; }
-.protocol-status__heading { padding: 1.4rem; border-right: 1px solid var(--line); }
-.protocol-status__heading h2 { margin-bottom: 0; }
-.protocol-status__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
-.protocol-status__list > div { padding: 1rem 1.2rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.protocol-status__list > div:nth-child(even) { border-right: 0; }
-.protocol-status__list > div:nth-last-child(-n + 2) { border-bottom: 0; }
-.protocol-status dt { color: var(--muted); font-size: 0.72rem; }
-.protocol-status dd { margin: 0.28rem 0 0; font-weight: 700; }
-.status-marker { width: 0.45rem; height: 0.45rem; display: inline-block; margin-right: 0.4rem; border-radius: 50%; background: var(--accent); }
+.security-telemetry { position: relative; min-height: 360px; display: grid; grid-template-columns: minmax(280px, 0.72fr) minmax(520px, 1.28fr); isolation: isolate; margin-top: clamp(2rem, 4vw, 3.5rem); overflow: hidden; border-block: 1px solid var(--line-strong); }
+.security-telemetry::before { position: absolute; left: clamp(-7rem, -5vw, -3rem); bottom: -9rem; z-index: -1; width: 22rem; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0 1.6rem, color-mix(in oklch, var(--line) 55%, transparent) 1.64rem 1.68rem); content: ""; opacity: 0.34; }
+.security-telemetry__intro { position: relative; display: flex; flex-direction: column; justify-content: center; padding: clamp(2rem, 4vw, 3.6rem) clamp(2rem, 4vw, 3.6rem) clamp(2rem, 4vw, 3.6rem) 0; }
+.security-telemetry__intro h2 { max-width: 13ch; margin-bottom: 0.9rem; font-size: clamp(2rem, 3.2vw, 3.15rem); font-weight: 450; }
+.security-telemetry__lede { max-width: 38ch; margin-bottom: 1.8rem; color: var(--muted); }
+.security-telemetry__summary { width: fit-content; display: grid; grid-template-columns: auto auto; gap: 0.1rem 0.6rem; align-items: center; margin: auto 0 0; padding-top: 1rem; border-top: 1px solid var(--line-strong); font-size: 0.76rem; }
+.security-telemetry__summary strong { color: var(--strong); font-size: 0.78rem; }
+.security-telemetry__summary > span:last-child { grid-column: 2; color: var(--muted); }
+.security-telemetry__pulse { width: 0.55rem; height: 0.55rem; grid-row: 1 / span 2; border: 1px solid var(--accent); border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 45%, transparent); animation: telemetry-pulse 2.8s ease-out infinite; }
+.security-telemetry__ordinal { position: absolute; right: 1.1rem; bottom: -1.3rem; z-index: -1; color: color-mix(in oklch, var(--line) 38%, transparent); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(6rem, 11vw, 10rem); font-weight: 800; line-height: 1; letter-spacing: -0.12em; }
+.security-telemetry__instrument { position: relative; display: grid; align-items: center; padding: clamp(1.1rem, 2.8vw, 2.6rem) 0 clamp(1.1rem, 2.8vw, 2.6rem) clamp(1rem, 3vw, 3rem); overflow: hidden; border-left: 1px solid var(--line-strong); }
+.security-telemetry__scan { position: absolute; top: 0; bottom: 0; left: 0; z-index: 0; width: 26%; pointer-events: none; background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--accent) 10%, transparent), transparent); transform: translateX(-120%); animation: telemetry-scan 6.8s var(--ease-out) infinite; }
+.security-telemetry__list { position: relative; z-index: 1; margin: 0; }
+.security-telemetry__list > div { position: relative; min-height: 70px; display: grid; grid-template-columns: minmax(12.5rem, 0.82fr) minmax(14rem, 1.18fr); align-items: center; border-top: 1px solid var(--line-strong); }
+.security-telemetry__list > div:last-child { border-bottom: 1px solid var(--line-strong); }
+.security-telemetry__list > div::after { position: absolute; left: -3.24rem; width: 0.48rem; height: 0.48rem; border: 1px solid var(--accent); background: var(--canvas); content: ""; transform: rotate(45deg); }
+.security-telemetry__list dt { min-width: 0; display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); align-items: center; color: var(--muted); font-size: 0.78rem; }
+.security-telemetry__index { color: var(--accent-text); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.7rem; letter-spacing: 0.08em; }
+.security-telemetry__list dd { min-width: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin: 0; }
+.security-telemetry__list dd strong { overflow-wrap: anywhere; color: var(--strong); font-size: 0.98rem; }
+.security-telemetry__list dd span { color: var(--accent-text); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.67rem; letter-spacing: 0.08em; text-transform: uppercase; }
 .security-perimeter--asymmetric { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(420px, 1.15fr); gap: clamp(2.5rem, 7vw, 7rem); align-items: center; }
 .security-perimeter__copy h2 { max-width: 13ch; font-size: clamp(2.3rem, 4vw, 3.8rem); }
 .perimeter-facts { margin-top: 2rem; }
@@ -287,9 +298,29 @@ code, .code-well { font-family: ui-monospace, SFMono-Regular, Consolas, monospac
 :root[data-appearance="signal-atelier"] .security-plate__content { padding: 1rem 1.15rem; border: 1px solid oklch(0.35 0.01 245); border-radius: 16px; background: oklch(0.145 0.008 245); color: oklch(0.92 0.01 82); }
 :root[data-appearance="signal-atelier"] .security-plate__content h2, :root[data-appearance="signal-atelier"] .security-plate__content dd { color: oklch(0.98 0.008 82); }
 :root[data-appearance="signal-atelier"] .security-plate__content dt { color: oklch(0.7 0.012 82); }
-:root[data-appearance="signal-atelier"] .protocol-status { margin-top: 1rem; border-radius: 28px; background: oklch(0.145 0.008 245); color: oklch(0.94 0.008 82); }
-:root[data-appearance="signal-atelier"] .protocol-status h2, :root[data-appearance="signal-atelier"] .protocol-status dd { color: oklch(0.98 0.008 82); }
-:root[data-appearance="signal-atelier"] .protocol-status dt { color: oklch(0.7 0.012 82); }
+:root[data-appearance="signal-atelier"] .security-telemetry { min-height: 430px; grid-template-columns: minmax(270px, 0.72fr) minmax(520px, 1.28fr); gap: clamp(1.5rem, 4vw, 4rem); margin-top: 1rem; padding: clamp(1.4rem, 3.5vw, 3.4rem); border: 0; border-radius: 30px; background: var(--surface); box-shadow: var(--shadow); }
+:root[data-appearance="signal-atelier"] .security-telemetry::before { left: auto; right: -8rem; bottom: -12rem; width: 30rem; border-color: oklch(0.72 0.02 80); background: repeating-radial-gradient(circle, transparent 0 2.1rem, oklch(0.72 0.02 80 / 0.4) 2.14rem 2.18rem); opacity: 0.6; }
+:root[data-appearance="signal-atelier"] .security-telemetry__intro { min-height: 330px; justify-content: flex-start; padding: 0; }
+:root[data-appearance="signal-atelier"] .security-telemetry .section-kicker { color: var(--accent-text); }
+:root[data-appearance="signal-atelier"] .security-telemetry__intro h2 { max-width: 9ch; color: var(--strong); font-size: clamp(2.7rem, 4.7vw, 4.9rem); font-weight: 410; line-height: 0.96; }
+:root[data-appearance="signal-atelier"] .security-telemetry__lede { max-width: 31ch; color: var(--muted); }
+:root[data-appearance="signal-atelier"] .security-telemetry__summary { margin-top: auto; border-color: var(--line); }
+:root[data-appearance="signal-atelier"] .security-telemetry__ordinal { right: -0.15rem; bottom: -1rem; color: oklch(0.88 0.03 82); }
+:root[data-appearance="signal-atelier"] .security-telemetry__instrument { align-self: stretch; padding: clamp(1rem, 2.5vw, 2rem); overflow: hidden; border: 0; border-radius: 26px 26px 26px 6px; background: oklch(0.145 0.008 245); color: oklch(0.94 0.008 82); box-shadow: inset 0 0 0 1px oklch(0.38 0.012 245), 0 24px 42px oklch(0.18 0.01 245 / 0.16); }
+:root[data-appearance="signal-atelier"] .security-telemetry__instrument::before { position: absolute; top: 0; right: 0; width: 5.5rem; height: 5.5rem; border: solid var(--accent); border-width: 0 0 1px 1px; border-radius: 0 0 0 100%; content: ""; opacity: 0.9; }
+:root[data-appearance="signal-atelier"] .security-telemetry__scan { background: linear-gradient(90deg, transparent, oklch(0.92 0.18 110 / 0.13), transparent); }
+:root[data-appearance="signal-atelier"] .security-telemetry__list > div { min-height: 78px; grid-template-columns: minmax(11.2rem, 0.8fr) minmax(13rem, 1.2fr); border-color: oklch(0.52 0.012 245); transition: padding 240ms var(--ease-out), background-color 240ms var(--ease-out); }
+:root[data-appearance="signal-atelier"] .security-telemetry__list dt { grid-template-columns: 3.2rem minmax(0, 1fr); }
+:root[data-appearance="signal-atelier"] .security-telemetry__list > div:first-child { margin-inline: -0.7rem; padding-inline: 0.7rem; border-color: var(--accent); border-radius: 10px 10px 0 0; background: var(--accent); }
+:root[data-appearance="signal-atelier"] .security-telemetry__list > div:first-child .security-telemetry__index,
+:root[data-appearance="signal-atelier"] .security-telemetry__list > div:first-child dt,
+:root[data-appearance="signal-atelier"] .security-telemetry__list > div:first-child dd strong,
+:root[data-appearance="signal-atelier"] .security-telemetry__list > div:first-child dd span { color: var(--strong); }
+:root[data-appearance="signal-atelier"] .security-telemetry__list > div::after { display: none; }
+:root[data-appearance="signal-atelier"] .security-telemetry__list dt { color: oklch(0.7 0.012 82); }
+:root[data-appearance="signal-atelier"] .security-telemetry__index { color: var(--accent); }
+:root[data-appearance="signal-atelier"] .security-telemetry__list dd strong { color: oklch(0.98 0.008 82); }
+:root[data-appearance="signal-atelier"] .security-telemetry__list dd span { color: var(--accent); }
 :root[data-appearance="signal-atelier"] .security-perimeter--asymmetric { padding: clamp(2rem, 5vw, 4rem); border-radius: 30px; background: var(--surface); }
 :root[data-appearance="signal-atelier"] .perimeter-terminal { border-radius: 24px; background: oklch(0.145 0.008 245); color: oklch(0.92 0.008 82); }
 :root[data-appearance="signal-atelier"] .perimeter-terminal h3 { color: oklch(0.98 0.008 82); }
@@ -297,7 +328,6 @@ code, .code-well { font-family: ui-monospace, SFMono-Regular, Consolas, monospac
 :root[data-appearance="signal-atelier"] .workflow-section h2, :root[data-appearance="signal-atelier"] .workflow-section .lede { color: oklch(0.96 0.008 82); }
 :root[data-appearance="signal-atelier"] .workflow-section .eyebrow,
 :root[data-appearance="signal-atelier"] .workflow-section .feature-card:not(:first-child) .feature-card__index,
-:root[data-appearance="signal-atelier"] .protocol-status .section-kicker,
 :root[data-appearance="signal-atelier"] .security-plate__content .section-kicker,
 :root[data-appearance="signal-atelier"] .perimeter-terminal .terminal-path,
 :root[data-appearance="signal-atelier"] .perimeter-terminal .trace-index { color: var(--accent); }
@@ -463,6 +493,8 @@ details form .button { margin-top: 0.7rem; }
 @keyframes sheet-three { to { transform: translate(-50%, -61%) rotate(-5deg) scale(0.85); } }
 @keyframes optic-float { 0%, 100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, calc(-50% - 8px)); } }
 @keyframes optic-turn { to { transform: rotate(360deg); } }
+@keyframes telemetry-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 45%, transparent); } 55%, 100% { box-shadow: 0 0 0 0.7rem transparent; } }
+@keyframes telemetry-scan { 0%, 16% { transform: translateX(-120%); } 58%, 100% { transform: translateX(520%); } }
 
 /* Real theme-change transition. */
 ::view-transition-old(root) { animation: theme-old 260ms ease-in both; }
@@ -511,17 +543,25 @@ details form .button { margin-top: 0.7rem; }
   .profile-header + .settings-grid > :last-child { grid-column: auto; }
   .page-header { min-height: auto; align-items: start; flex-direction: column; justify-content: flex-end; }
   .footer-inner { flex-direction: column; }
-  .protocol-status { grid-template-columns: 1fr; }
-  .protocol-status__heading { border-right: 0; border-bottom: 1px solid var(--line); }
+  .security-telemetry, :root[data-appearance="signal-atelier"] .security-telemetry { grid-template-columns: 1fr; }
+  .security-telemetry__intro, :root[data-appearance="signal-atelier"] .security-telemetry__intro { min-height: 0; padding: 2rem 0; }
+  :root[data-appearance="signal-atelier"] .security-telemetry__intro { padding: 0; }
+  .security-telemetry__instrument { padding-left: 3rem; border-top: 1px solid var(--line); border-left: 0; }
+  :root[data-appearance="signal-atelier"] .security-telemetry__instrument { border-top: 0; }
 }
 
 @media (max-width: 640px) {
   .hero-capabilities { align-items: stretch; flex-direction: column; border: 0; }
   .hero-capabilities li { width: 100%; border: 1px solid var(--line); border-bottom: 0; }
   .hero-capabilities li:last-child { border-bottom: 1px solid var(--line); }
-  .protocol-status__list { grid-template-columns: 1fr; }
-  .protocol-status__list > div { border-right: 0; border-bottom: 1px solid var(--line) !important; }
-  .protocol-status__list > div:last-child { border-bottom: 0 !important; }
+  .security-telemetry { min-height: 0; }
+  .security-telemetry__instrument { padding-inline: 1rem; }
+  .security-telemetry__list > div, :root[data-appearance="signal-atelier"] .security-telemetry__list > div { min-height: 92px; grid-template-columns: 1fr; gap: 0.25rem; padding-block: 0.75rem; }
+  .security-telemetry__list dt, :root[data-appearance="signal-atelier"] .security-telemetry__list dt { grid-template-columns: 2.3rem minmax(0, 1fr); }
+  .security-telemetry__list > div::after { display: none; }
+  .security-telemetry__list dd { align-items: flex-start; flex-direction: column; gap: 0.15rem; margin-left: 2.8rem; }
+  :root[data-appearance="signal-atelier"] .security-telemetry { padding: 1.2rem; border-radius: 20px; }
+  :root[data-appearance="signal-atelier"] .security-telemetry__intro h2 { font-size: 2.7rem; }
   .security-plate__content { grid-template-columns: 1fr; }
   .security-plate__content .spec-list { grid-column: 1; grid-row: auto; margin-top: 0.8rem; }
   .feature-card { grid-column: 1 / -1; border-left: 1px solid var(--line); }
@@ -557,8 +597,8 @@ details form .button { margin-top: 0.7rem; }
 }
 
 @media (forced-colors: active) {
-  .cyber-backdrop, .cipher-canvas, .material-sheet, .optic-core, .feature-card__trace, .landing-cta__grid { display: none !important; }
-  .panel, .page-header, .security-plate, .cyber-panel, .metric-grid > div, .button, input, select, textarea, .status, .header-inner, .subnav, .flash, .profile-chip, .appearance-choice, .effects-toggle { border: 1px solid CanvasText; background: Canvas; color: CanvasText; box-shadow: none; }
+  .cyber-backdrop, .cipher-canvas, .material-sheet, .optic-core, .feature-card__trace, .landing-cta__grid, .security-telemetry__scan, .security-telemetry::before, .security-telemetry__ordinal { display: none !important; }
+  .panel, .page-header, .security-plate, .cyber-panel, .security-telemetry, .security-telemetry__instrument, .metric-grid > div, .button, input, select, textarea, .status, .header-inner, .subnav, .flash, .profile-chip, .appearance-choice, .effects-toggle { border: 1px solid CanvasText; background: Canvas; color: CanvasText; box-shadow: none; }
   .button--primary { border: 2px solid ButtonText; background: ButtonFace; color: ButtonText; }
   :focus-visible { outline: 3px solid Highlight; box-shadow: none !important; }
   .appearance-picker__panel { position: static; }

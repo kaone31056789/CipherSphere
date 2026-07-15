@@ -40,14 +40,23 @@
   </aside>
 </section>
 
-<section class="protocol-status cyber-panel" aria-labelledby="protocol-status-title">
-  <div class="protocol-status__heading"><p class="section-kicker">System posture</p><h2 id="protocol-status-title">Protocol status</h2></div>
-  <dl class="protocol-status__list">
-    <div><dt>Encryption core</dt><dd><span class="status-marker" aria-hidden="true"></span>AES-256-GCM</dd></div>
-    <div><dt>Key derivation</dt><dd><span class="status-marker" aria-hidden="true"></span>PBKDF2 · 600K</dd></div>
-    <div><dt>Identity layer</dt><dd><span class="status-marker" aria-hidden="true"></span>Supabase Auth</dd></div>
-    <div><dt>Access policy</dt><dd><span class="status-marker" aria-hidden="true"></span>Role enforced</dd></div>
-  </dl>
+<section class="security-telemetry motion-reveal" aria-labelledby="security-telemetry-title">
+  <div class="security-telemetry__intro">
+    <p class="section-kicker">Verified security stack</p>
+    <h2 id="security-telemetry-title">Protection is active at every boundary.</h2>
+    <p class="security-telemetry__lede">Four independent controls protect the path from sign-in to ciphertext release.</p>
+    <p class="security-telemetry__summary"><span class="security-telemetry__pulse" aria-hidden="true"></span><strong>4 of 4 safeguards online</strong><span>Current workspace posture</span></p>
+    <span class="security-telemetry__ordinal" aria-hidden="true">04</span>
+  </div>
+  <div class="security-telemetry__instrument">
+    <span class="security-telemetry__scan" aria-hidden="true"></span>
+    <dl class="security-telemetry__list">
+      <div><dt><span class="security-telemetry__index" aria-hidden="true">01</span><span>Encryption core</span></dt><dd><strong>AES-256-GCM</strong><span>Authenticated</span></dd></div>
+      <div><dt><span class="security-telemetry__index" aria-hidden="true">02</span><span>Key derivation</span></dt><dd><strong>PBKDF2 · 600K</strong><span>Hardened</span></dd></div>
+      <div><dt><span class="security-telemetry__index" aria-hidden="true">03</span><span>Identity layer</span></dt><dd><strong>Supabase Auth</strong><span>Federated</span></dd></div>
+      <div><dt><span class="security-telemetry__index" aria-hidden="true">04</span><span>Access policy</span></dt><dd><strong>Role enforced</strong><span>Scoped</span></dd></div>
+    </dl>
+  </div>
 </section>
 
 <section class="content-section security-perimeter security-perimeter--asymmetric" aria-labelledby="security-perimeter-title">

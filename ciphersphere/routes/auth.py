@@ -8,6 +8,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from flask import Flask, current_app, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_user, logout_user
 from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
 
 from ..auth_service import AuthenticationError, get_auth_service
 from ..extensions import db
@@ -33,6 +34,15 @@ def _oauth_callback_url(base_url: str, flow: str) -> str:
     query = [(key, value) for key, value in parse_qsl(parsed.query) if key != "flow"]
     query.append(("flow", flow))
     return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, urlencode(query), ""))
+
+
+def _audit_oauth_failure(action: str, details: dict[str, str]) -> None:
+    """Record an OAuth failure without replacing the user-facing auth error."""
+    try:
+        audit_action(action, details=details, success=False)
+    except SQLAlchemyError:
+        db.session.rollback()
+        current_app.logger.exception("Could not record OAuth failure audit")
 
 
 def register_auth_routes(app: Flask) -> None:
@@ -122,10 +132,9 @@ def register_auth_routes(app: Flask) -> None:
             )
             authorization_url, verifier = get_auth_service().google_oauth_url(callback_url)
         except (AuthenticationError, RuntimeError) as exc:
-            audit_action(
+            _audit_oauth_failure(
                 "auth.oauth_start_failed",
-                details={"provider": "google"},
-                success=False,
+                {"provider": "google"},
             )
             flash(str(exc), "error")
             return redirect(url_for("login"))
@@ -156,10 +165,12 @@ def register_auth_routes(app: Flask) -> None:
             and secrets.compare_digest(expected_flow, supplied_flow)
         )
         if provider_error or not flow_matches or not auth_code or not verifier or not callback_url:
-            audit_action(
+            _audit_oauth_failure(
                 "auth.oauth_failed",
-                details={"provider": "google", "reason": "provider_error" if provider_error else "invalid_flow"},
-                success=False,
+                {
+                    "provider": "google",
+                    "reason": "provider_error" if provider_error else "invalid_flow",
+                },
             )
             flash("Google sign-in was cancelled or the request expired. Please try again.", "error")
             return redirect(url_for("login"))
@@ -184,10 +195,9 @@ def register_auth_routes(app: Flask) -> None:
             return redirect(url_for("admin_dashboard" if user.is_admin else "dashboard"))
         except (AuthenticationError, RuntimeError) as exc:
             db.session.rollback()
-            audit_action(
+            _audit_oauth_failure(
                 "auth.oauth_failed",
-                details={"provider": "google", "reason": "code_exchange"},
-                success=False,
+                {"provider": "google", "reason": "code_exchange"},
             )
             flash(str(exc), "error")
             return redirect(url_for("login"))

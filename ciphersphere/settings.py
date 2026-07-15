@@ -6,6 +6,7 @@ import os
 import secrets
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from sqlalchemy.pool import NullPool
 
@@ -84,6 +85,22 @@ def _database_url() -> str:
     )
     if not value:
         return f"sqlite:///{(PROJECT_ROOT / 'instance' / 'ciphersphere.db').as_posix()}"
+
+    # The Vercel/Supabase integration appends `supa` routing metadata.
+    # libpq/psycopg treats unknown query keys as connection
+    # options and rejects the URL, so remove only that integration-specific key
+    # while preserving real PostgreSQL options such as sslmode.
+    parsed = urlsplit(value)
+    if parsed.query:
+        query = urlencode(
+            [
+                (key, item)
+                for key, item in parse_qsl(parsed.query, keep_blank_values=True)
+                if key != "supa"
+            ]
+        )
+        value = urlunsplit((parsed.scheme, parsed.netloc, parsed.path, query, parsed.fragment))
+
     if value.startswith("postgres://"):
         return "postgresql+psycopg://" + value.removeprefix("postgres://")
     if value.startswith("postgresql://"):
