@@ -14,7 +14,7 @@ from sqlalchemy import text
 
 load_dotenv()
 
-from .auth_service import build_auth_service, find_user
+from .auth_service import build_auth_service, ensure_designated_admin, find_user
 from .encryption import EncryptionManager
 from .extensions import csrf, db, login_manager
 from .models import User
@@ -81,6 +81,8 @@ def create_app(config: dict[str, Any] | type[Config] | None = None) -> Flask:
         if not current_user.is_active or expected != current_user.session_version:
             logout_user()
             session.clear()
+            return
+        ensure_designated_admin(current_user)
 
     @app.template_filter("b64encode")
     def b64encode_filter(data: Any) -> str:

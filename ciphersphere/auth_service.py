@@ -53,6 +53,21 @@ def find_user(identifier: str) -> User | None:
     ).first()
 
 
+def is_designated_admin(email: str) -> bool:
+    """Check the server-owned admin allowlist using exact email matching."""
+    configured = current_app.config.get("ADMIN_EMAILS") or ()
+    return email.strip().casefold() in configured
+
+
+def ensure_designated_admin(user: User) -> bool:
+    """Promote an allowlisted profile without trusting OAuth user metadata."""
+    if user.is_admin or not is_designated_admin(user.email):
+        return False
+    user.role = "admin"
+    db.session.commit()
+    return True
+
+
 class SupabaseAuthProvider:
     """Create an isolated Supabase client for every authentication operation."""
 
@@ -116,6 +131,8 @@ class SupabaseAuthProvider:
         if user:
             user.auth_subject = subject
             user.email = email.lower()
+            if is_designated_admin(email):
+                user.role = "admin"
             db.session.commit()
             return user
 
@@ -129,7 +146,7 @@ class SupabaseAuthProvider:
             username=candidate,
             email=email.lower(),
             full_name=full_name or candidate,
-            role="user",
+            role="admin" if is_designated_admin(email) else "user",
         )
         db.session.add(user)
         db.session.commit()

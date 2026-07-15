@@ -29,6 +29,15 @@ def _csv_setting(name: str) -> list[str] | None:
     return values or None
 
 
+def _admin_emails() -> frozenset[str]:
+    """Return exact, deployment-controlled administrator email addresses."""
+    values = _csv_setting("ADMIN_EMAILS") or []
+    legacy_email = os.getenv("ADMIN_EMAIL", "").strip()
+    if legacy_email:
+        values.append(legacy_email)
+    return frozenset(value.casefold() for value in values)
+
+
 def _vercel_host(name: str) -> str:
     """Return a validated host from a Vercel-provided URL variable."""
     value = os.getenv(name, "").strip()
@@ -138,6 +147,7 @@ class Config:
         }
     )
     AUTH_PROVIDER = os.getenv("AUTH_PROVIDER", "supabase").strip().lower()
+    ADMIN_EMAILS = _admin_emails()
     SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip()
     SUPABASE_ANON_KEY = (
         os.getenv("SUPABASE_PUBLISHABLE_KEY", "").strip()
