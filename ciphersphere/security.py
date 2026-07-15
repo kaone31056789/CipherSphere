@@ -125,6 +125,10 @@ def validate_runtime_security(app: Flask) -> None:
         raise RuntimeError("Production requires an HTTPS SUPABASE_URL.")
     if not app.config.get("SUPABASE_ANON_KEY"):
         raise RuntimeError("Production requires SUPABASE_PUBLISHABLE_KEY.")
+    if not str(app.config.get("SUPABASE_AUTH_URL") or "").startswith("https://"):
+        raise RuntimeError("Production requires an HTTPS SUPABASE_AUTH_URL.")
+    if not app.config.get("SUPABASE_AUTH_ANON_KEY"):
+        raise RuntimeError("Production requires SUPABASE_AUTH_PUBLISHABLE_KEY.")
     for name in ("SUPABASE_PASSWORD_REDIRECT_URL", "SUPABASE_OAUTH_REDIRECT_URL"):
         if not str(app.config.get(name) or "").startswith("https://"):
             raise RuntimeError(f"Production requires an HTTPS {name}.")

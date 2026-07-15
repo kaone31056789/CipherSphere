@@ -10,6 +10,7 @@ import click
 from dotenv import load_dotenv
 from flask import Flask, session
 from flask_login import current_user, logout_user
+from sqlalchemy import text
 
 load_dotenv()
 
@@ -49,7 +50,19 @@ def create_app(config: dict[str, Any] | type[Config] | None = None) -> Flask:
     init_security_headers(app)
     app.extensions["auth_service"] = build_auth_service(app.config["AUTH_PROVIDER"])
     app.extensions["encryption_manager"] = EncryptionManager()
-    if app.config.get("AUTO_CREATE_DATABASE", True):
+    if app.config.get("SCHEMA_BOOTSTRAP") and not app.config[
+        "SQLALCHEMY_DATABASE_URI"
+    ].startswith("sqlite:"):
+        with app.app_context():
+            # A transaction-scoped advisory lock makes this safe across
+            # concurrent serverless cold starts. create_all only adds missing
+            # tables; it does not rewrite or drop existing production data.
+            with db.engine.begin() as connection:
+                connection.execute(
+                    text("SELECT pg_advisory_xact_lock(213546879012345678::bigint)")
+                )
+                db.metadata.create_all(bind=connection)
+    elif app.config.get("AUTO_CREATE_DATABASE", True):
         with app.app_context():
             db.create_all()
 

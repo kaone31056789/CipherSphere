@@ -67,11 +67,15 @@ class SupabaseAuthProvider:
     ):  # type: ignore[no-untyped-def]
         if create_client is None or ClientOptions is None:
             raise RuntimeError("Install the supabase package before starting CipherSphere.")
-        url = current_app.config.get("SUPABASE_URL", "")
-        key_name = "SUPABASE_SERVICE_ROLE_KEY" if admin else "SUPABASE_ANON_KEY"
+        url = current_app.config.get("SUPABASE_AUTH_URL", "")
+        key_name = (
+            "SUPABASE_AUTH_SERVICE_ROLE_KEY"
+            if admin
+            else "SUPABASE_AUTH_ANON_KEY"
+        )
         key = current_app.config.get(key_name, "")
         if not url or not key:
-            raise RuntimeError(f"SUPABASE_URL and {key_name} must be configured.")
+            raise RuntimeError(f"SUPABASE_AUTH_URL and {key_name} must be configured.")
         options: dict[str, Any] = {
             "persist_session": False,
             "auto_refresh_token": False,
@@ -83,8 +87,8 @@ class SupabaseAuthProvider:
 
     def google_provider_enabled(self) -> bool | None:
         """Return the public Google-provider state, or None when it cannot be read."""
-        url = current_app.config.get("SUPABASE_URL", "").rstrip("/")
-        key = current_app.config.get("SUPABASE_ANON_KEY", "")
+        url = current_app.config.get("SUPABASE_AUTH_URL", "").rstrip("/")
+        key = current_app.config.get("SUPABASE_AUTH_ANON_KEY", "")
         if not url or not key:
             return None
         parsed = urlsplit(url)
@@ -120,13 +124,12 @@ class SupabaseAuthProvider:
         while User.query.filter(func.lower(User.username) == candidate.lower()).first():
             suffix += 1
             candidate = f"{username[:72]}_{suffix}"
-        initial_role = "admin" if User.query.count() == 0 else "user"
         user = User(
             auth_subject=subject,
             username=candidate,
             email=email.lower(),
             full_name=full_name or candidate,
-            role=initial_role,
+            role="user",
         )
         db.session.add(user)
         db.session.commit()

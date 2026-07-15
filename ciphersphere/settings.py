@@ -147,6 +147,25 @@ class Config:
         os.getenv("SUPABASE_SECRET_KEY", "").strip()
         or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
     )
+    # Auth can live in a separately managed Supabase project while the Vercel
+    # Marketplace resource continues to provide PostgreSQL and private Storage.
+    SUPABASE_AUTH_URL = (
+        os.getenv("SUPABASE_AUTH_URL", "").strip() or SUPABASE_URL
+    )
+    SUPABASE_AUTH_ANON_KEY = (
+        os.getenv("SUPABASE_AUTH_PUBLISHABLE_KEY", "").strip()
+        or os.getenv("SUPABASE_AUTH_ANON_KEY", "").strip()
+        or SUPABASE_ANON_KEY
+    )
+    SUPABASE_AUTH_SERVICE_ROLE_KEY = (
+        os.getenv("SUPABASE_AUTH_SECRET_KEY", "").strip()
+        or os.getenv("SUPABASE_AUTH_SERVICE_ROLE_KEY", "").strip()
+        or (
+            SUPABASE_SERVICE_ROLE_KEY
+            if SUPABASE_AUTH_URL == SUPABASE_URL
+            else ""
+        )
+    )
     SUPABASE_PASSWORD_REDIRECT_URL = _redirect_url(
         "SUPABASE_PASSWORD_REDIRECT_URL", "/reset_password"
     )
@@ -175,6 +194,7 @@ class Config:
         "AUTO_CREATE_DATABASE",
         "true" if SQLALCHEMY_DATABASE_URI.startswith("sqlite:") else "false",
     ).lower() == "true"
+    SCHEMA_BOOTSTRAP = _bool_setting("CIPHERSPHERE_SCHEMA_BOOTSTRAP")
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_NAME = "__Host-ciphersphere_session" if PRODUCTION else "session"
     SESSION_COOKIE_SAMESITE = "Lax"
